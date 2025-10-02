@@ -7,6 +7,9 @@ import { User } from './users/entities/user.entity';
 //
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsersprojectsModule } from './usersprojects/usersprojects.module';
+import { ProjectsModule } from './projects/projects.module';
+import { TasksModule } from './tasks/tasks.module';
 
 
 @Module({
@@ -27,7 +30,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         synchronize: true,
       }),
     }),
-    UsersModule
+    UsersModule,
+    UsersprojectsModule,
+    ProjectsModule,
+    TasksModule
   ],
   controllers: [AppController],
   providers: [AppService],
