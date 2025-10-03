@@ -1,26 +1,52 @@
 import { Injectable } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { Project } from './entities/project.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UsersprojectsService } from 'src/usersprojects/usersprojects.service';
+import { UserRole } from 'src/users/enums/user-role.enum';
 
 @Injectable()
 export class ProjectsService {
-  create(createProjectDto: CreateProjectDto) {
-    return 'This action adds a new project';
+
+  constructor(
+      @InjectRepository(Project)
+      private readonly projectRepository: Repository<Project>,
+      private readonly usersProjectsService: UsersprojectsService
+    ) {}
+
+  async create(createProjectDto: CreateProjectDto): Promise<Project> {
+    const project = await this.projectRepository.save({
+      title: createProjectDto.title,
+      description: createProjectDto.description,
+      startDate: createProjectDto.startDate,
+      endDate: createProjectDto.endDate
+    });
+    await this.usersProjectsService.create({userId: createProjectDto.ownerId, projectId: project.id, role: UserRole.OWNER});
+    return project;
   }
 
-  findAll() {
-    return `This action returns all projects`;
+  async findAll(): Promise<Project[]> {
+    return await this.projectRepository.find({relations: ['userProjects', 'tasks']});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} project`;
+  async findOne(id: number): Promise<Project> {
+    const project = await this.projectRepository.findOne({where: {id}, relations: ['userProjects', 'tasks']});
+    if (!project) {
+      throw new Error(`Project with ID ${id} not found`);
+    }
+    return project;
   }
 
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
+  async update(id: number, updateProjectDto: UpdateProjectDto): Promise<Project> {
+    await this.projectRepository.update(id, updateProjectDto);
+    return await this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  async remove(id: number): Promise<void> {
+    const project = await this.findOne(id);
+    await this.projectRepository.remove(project);
+    
   }
 }

@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToMany } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
 import { Exclude } from 'class-transformer';
-import { UserProject } from 'src/usersprojects/entities/usersproject.entity';
-import { Task } from 'src/tasks/entities/task.entity';
+import { UserProject } from '../../usersprojects/entities/usersproject.entity';
+import { Task } from '../../tasks/entities/task.entity';
 
 @Entity('users') // Table name in the database
 export class User {

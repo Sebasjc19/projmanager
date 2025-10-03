@@ -14,7 +14,6 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-
   //Basic CRUD methods
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.userRepository.create(createUserDto);
@@ -46,20 +45,5 @@ export class UsersService {
     }
     await this.userRepository.remove(user);
   }
-
-  //Project methods
-  findAllProjectsByUser(id: number) {
-    return `This action returns all projects of user #${id}`;
-  }
-
-  getRoleByUserAndProject(userId: number, projectId: number) {
-    return `This action returns the role of user #${userId} in project #${projectId}`;
-  }
-
-  //Administrator
-  updateUserRole(userId: number, projectId: number, role: UserRole) {
-    return `This action updates the role of user #${userId} in project #${projectId} to ${role}`;
-  }
-
 
 }
