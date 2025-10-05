@@ -4,8 +4,8 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UsersprojectsService } from 'src/usersprojects/usersprojects.service';
-import { UserRole } from 'src/users/enums/user-role.enum';
+import { UsersprojectsService } from '../usersprojects/usersprojects.service';
+import { UserRole } from '../users/enums/user-role.enum';
 
 @Injectable()
 export class ProjectsService {
