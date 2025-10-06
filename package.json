@@ -8,7 +8,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "dev:backend": "turbo run dev --filter backend",
-    "dev:frontend": "turbo run dev --filter frontend"
+    "dev:frontend": "turbo run dev --filter frontend",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

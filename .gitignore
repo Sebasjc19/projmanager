@@ -37,4 +37,8 @@ yarn-error.log*
 .DS_Store
 *.pem
 
+#Github
+!.github/
+!.github/workflows/
+
 
