@@ -10,10 +10,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersprojectsModule } from './usersprojects/usersprojects.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
+  
   imports: [
+    
+
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -33,7 +37,8 @@ import { TasksModule } from './tasks/tasks.module';
     UsersModule,
     UsersprojectsModule,
     ProjectsModule,
-    TasksModule
+    TasksModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
