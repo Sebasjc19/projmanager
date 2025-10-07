@@ -8,20 +8,20 @@ describe('UsersService', () => {
   let userRepository: any;
 
   beforeEach(async () => {
-    userRepository = { 
+    userRepository = {
       create: jest.fn(),
       save: jest.fn(),
       find: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn(),
       remove: jest.fn(),
-      findOneBy: jest.fn(),  
+      findOneBy: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
-        { 
+        {
           provide: getRepositoryToken(User), useValue: userRepository
         }
       ],
@@ -41,7 +41,7 @@ describe('UsersService', () => {
     userRepository.save.mockResolvedValue(user);
 
     const result = await service.create(dto as any);
-    
+
     expect(userRepository.create).toHaveBeenCalledWith(dto);
     expect(userRepository.save).toHaveBeenCalledWith(user);
     expect(result).toBe(user);
@@ -56,12 +56,21 @@ describe('UsersService', () => {
     expect(result).toBe(users);
   });
 
-    it('should find one user by id', async () => {
+  it('should find one user by id', async () => {
     const user = { id: 1, name: 'A' };
     userRepository.findOneBy.mockResolvedValue(user);
 
     const result = await service.findOne(1);
     expect(userRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+    expect(result).toBe(user);
+  });
+
+  it('should find one user by email', async () => {
+    const user = { email: "example@example.com", name: 'A' };
+    userRepository.findOneBy.mockResolvedValue(user);
+
+    const result = await service.findByEmail("example@example.com");
+    expect(userRepository.findOneBy).toHaveBeenCalledWith({ email: "example@example.com" });
     expect(result).toBe(user);
   });
 
