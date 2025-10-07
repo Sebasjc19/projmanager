@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OwnerGuard } from '../auth/guards/owner.guard';
-import { ProductionGuard } from 'src/common/guards/production.guard';
+import { ProductionGuard } from '../common/guards/production.guard';
 
 @Controller('users')
 export class UsersController {
