@@ -104,8 +104,8 @@ export class UsersprojectsController {
     description: 'User not authorized to view these projects.'
   })
   @UseGuards(JwtAuthGuard, OwnerGuard)
-  @Get('user/:id/projects')
-  async findAllProjectsByUser(@Param('id') userId: number) {
+  @Get('user/:userId/projects')
+  async findAllProjectsByUser(@Param('userId') userId: number) {
     return this.usersprojectsService.findAllProjectsByUser(userId);
   }
 

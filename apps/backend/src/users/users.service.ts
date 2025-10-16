@@ -42,8 +42,11 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  /**
-   * Experimental!!!
+   /**
+   * Retrieves all users.
+   * 
+   * @experimental This method is for testing and debugging purposes.
+   * @returns A list of all User entities.
    */
   async findAll(): Promise<User[]> {
     return await this.userRepository.find();

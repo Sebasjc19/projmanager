@@ -48,7 +48,6 @@ export class ProjectsService {
   }
   
   /**
-   * Experimental!!!
    * Retrieves all projects with their associated user projects and tasks.
    * 
    * @returns An array of all Project entities, including their associated user projects and tasks.
