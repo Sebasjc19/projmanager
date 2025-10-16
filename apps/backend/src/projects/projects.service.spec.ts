@@ -68,7 +68,7 @@ describe('ProjectsService', () => {
 
     const result = await service.findAll();
     expect(projectRepository.find).toHaveBeenCalledWith({
-      relations: ['userProjects', 'tasks'],
+      relations: ['tasks'],
     });
     expect(result).toBe(projects);
   });
@@ -80,7 +80,7 @@ describe('ProjectsService', () => {
     const result = await service.findOne(1);
     expect(projectRepository.findOne).toHaveBeenCalledWith({
       where: { id: 1 },
-      relations: ['userProjects', 'tasks'],
+      relations: ['tasks'],
     });
     expect(result).toBe(project);
   });
@@ -97,7 +97,7 @@ describe('ProjectsService', () => {
     expect(projectRepository.update).toHaveBeenCalledWith(1, dto);
     expect(projectRepository.findOne).toHaveBeenCalledWith({
       where: { id: 1 },
-      relations: ['userProjects', 'tasks'],
+      relations: ['tasks'],
     });
     expect(result).toBe(project);
   });
@@ -111,7 +111,7 @@ describe('ProjectsService', () => {
     
     expect(projectRepository.findOne).toHaveBeenCalledWith({
       where: { id: 1 },
-      relations: ['userProjects', 'tasks'],
+      relations: ['tasks'],
     });
     expect(projectRepository.remove).toHaveBeenCalledWith(project);
   });

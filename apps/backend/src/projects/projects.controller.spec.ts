@@ -4,6 +4,8 @@ import { ProjectsService } from './projects.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Project } from './entities/project.entity';
 import { UsersprojectsService } from '../usersprojects/usersprojects.service';
+import { ProductionGuard } from '../common/guards/production.guard';
+import { ConfigService } from '@nestjs/config';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
@@ -13,6 +15,13 @@ describe('ProjectsController', () => {
       controllers: [ProjectsController],
       providers: [
         ProjectsService,
+        ProductionGuard,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('DEV')
+          },
+        },
         {
           provide: getRepositoryToken(Project),
           useValue: {

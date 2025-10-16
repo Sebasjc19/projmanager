@@ -1,17 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersprojectsService } from '../usersprojects/usersprojects.service';
-import { UserRole } from '../users/enums/user-role.enum';
+import { UserRole } from '../usersprojects/enums/user-role.enum';
 
+/**
+ * Service responsible for managing application projects.
+ * 
+ * Provides methods to create, retrieve, update, and delete project entities.
+ * 
+ * This service interacts directly with the database through the Project repository
+ * and ensures proper exception handling for common scenarios such as missing records.
+ */
 @Injectable()
 export class ProjectsService {
   constructor(
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
+
+    @Inject(forwardRef(() => UsersprojectsService))
     private readonly usersProjectsService: UsersprojectsService,
   ) {}
 
@@ -38,13 +48,14 @@ export class ProjectsService {
   }
   
   /**
+   * Experimental!!!
    * Retrieves all projects with their associated user projects and tasks.
    * 
    * @returns An array of all Project entities, including their associated user projects and tasks.
    */
   async findAll(): Promise<Project[]> {
     return await this.projectRepository.find({
-      relations: ['userProjects', 'tasks'],
+      relations: ['tasks'],
     });
   }
   
@@ -58,10 +69,10 @@ export class ProjectsService {
   async findOne(id: number): Promise<Project> {
     const project = await this.projectRepository.findOne({
       where: { id },
-      relations: ['userProjects', 'tasks'],
-    });
+      relations: ['tasks',]
+     });
     if (!project) {
-      throw new Error(`Project with ID ${id} not found`);
+      throw new NotFoundException(`Project with ID ${id} not found`);
     }
     return project;
   }
@@ -86,6 +97,9 @@ export class ProjectsService {
    */
   async remove(id: number): Promise<void> {
     const project = await this.findOne(id);
+    if(!project){
+      throw new NotFoundException(`Project with ${id} not found`);
+    }
     await this.projectRepository.remove(project);
   }
 }

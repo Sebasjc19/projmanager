@@ -3,23 +3,32 @@ import { UserProject } from '../../usersprojects/entities/usersproject.entity';
 import { Task } from '../../tasks/entities/task.entity';
 import { projectStatus } from '../enums/project-status.enum';
 
+/**
+ * Project entity representing a business project with users and tasks.
+ */
 @Entity()
 export class Project {
+  /** Project unique identifier. */
   @PrimaryGeneratedColumn()
   id: number;
 
+  /** Short title of the project. */
   @Column()
   title: string;
 
+  /** Optional detailed project description. */
   @Column({ nullable: true })
   description: string;
 
-  @Column()
+  /** Start date of the project. */
+  @Column({ type: 'date' })
   startDate: Date;
 
-  @Column()
+  /** Expected or actual end date. */
+  @Column({ type: 'date' })
   endDate: Date;
 
+  /** Current project status. */
   @Column({ 
     type: 'enum',
     enum: projectStatus,
@@ -27,9 +36,11 @@ export class Project {
   })
   status: projectStatus;
 
+  /** Users assigned to this project. */
   @OneToMany(() => UserProject, userProject => userProject.project)
   userProjects: UserProject[];
 
+  /** Tasks belonging to this project. */
   @OneToMany(() => Task, task => task.project)
   tasks: Task[];
 }
