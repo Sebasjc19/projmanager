@@ -1,11 +1,20 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserRole } from './enums/user-role.enum';
+import { UserRole } from '../usersprojects/enums/user-role.enum';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-
+/**
+ * Service responsible for managing application users.
+ * 
+ * Provides methods to create, retrieve, update, and delete user entities.
+ * Also includes helper methods for fetching users by ID or email.
+ * 
+ * This service interacts directly with the database through the User repository
+ * and ensures proper exception handling for common scenarios such as duplicate emails
+ * or missing records.
+ */
 @Injectable()
 export class UsersService {
 
@@ -19,6 +28,7 @@ export class UsersService {
    * 
    * @param createUserDto Data Transfer Object containing the user details.
    * @returns The created user entity.
+   * @throws {ConflictException} If the email specified already exist.
    */
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.userRepository.create(createUserDto);
