@@ -5,6 +5,8 @@ import { UserProject } from './entities/usersproject.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ProductionGuard } from '../common/guards/production.guard';
 import { ConfigService } from '@nestjs/config';
+import { ProjectsService } from '../projects/projects.service';
+import { UsersService } from '../users/users.service';
 
 describe('UsersprojectsController', () => {
   let controller: UsersprojectsController;
@@ -31,7 +33,27 @@ describe('UsersprojectsController', () => {
             findOne: jest.fn(),
             remove: jest.fn(),
           }
-        }
+        },
+        {
+        provide: ProjectsService,
+        useValue: {
+          create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
+        {
+        provide: UsersService,
+        useValue: {
+          create: jest.fn(),
+            save: jest.fn(),
+            find: jest.fn(),
+            findOne: jest.fn(),
+            remove: jest.fn(),
+        },
+      },
       ],
     }).compile();
 
