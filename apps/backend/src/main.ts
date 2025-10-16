@@ -34,8 +34,7 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
         description: 'Enter your JWT token to access protected endpoints.',
-      },
-    'access-token',
+      }
     )
     .build();
     
