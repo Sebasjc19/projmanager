@@ -1,9 +1,19 @@
-// auth/guards/owner.guard.ts
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-
+/**
+ * Guard that ensures the authenticated user is the owner of the resource.
+ * Compares the user's ID from the JWT with the userId parameter in the route.
+ * 
+ * @throws {UnauthorizedException} If user is not authenticated
+ * @throws {ForbiddenException} If user ID doesn't match the resource owner ID
+ * 
+ * @example
+ * @UseGuards(JwtAuthGuard, OwnerGuard)
+ * @Put('users/:userId/profile')
+ * async updateProfile(@Param('userId') userId: string) { ... }
+ */
 @Injectable()
 export class OwnerGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const paramId = Number(request.params.userId);

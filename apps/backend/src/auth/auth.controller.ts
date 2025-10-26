@@ -1,40 +1,29 @@
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, HttpStatus, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiOperation, ApiBody, ApiCreatedResponse, ApiUnauthorizedResponse, ApiTags, ApiBadRequestResponse } from '@nestjs/swagger';
-
+import { ApiOperation, ApiBody, ApiCreatedResponse, ApiUnauthorizedResponse, ApiTags, ApiBadRequestResponse, ApiOkResponse } from '@nestjs/swagger';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import { ApiStandardResponse } from 'src/common/decorators/api-response.decorators';
+import { ApiCommonErrors } from 'src/common/decorators/api-error-response.decorators';
+/**
+ * Authentication controller.
+ * Handles user login and token generation.
+ */
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
+  
   @Post('login')
-  @ApiOperation({
-    summary: 'User login',
-    description: 'Validates user credentials and returns a JWT token if successful.',
+  @ApiOperation({ summary: 'User login' })
+  @ApiStandardResponse(AuthResponseDto, "JWT Token successfully created.")
+  @ApiCommonErrors({
+    badRequest: true,
+    unauthorized: true,
   })
-  @ApiBody({
-    type: LoginDto,
-    description: 'User credentials required for authentication',
-  })
-  @ApiCreatedResponse({
-    description: 'JWT token successfully created.',
-    type: String,
-  })
-  @ApiBadRequestResponse({ 
-      description: 'Invalid input data.' 
-  })
-  @ApiUnauthorizedResponse({
-    description: 'Invalid email or password.',
-  })
-  @Post('login')
-  async login(@Body() loginDto : LoginDto) {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
-
-    if (!user) {
-      throw new UnauthorizedException('Unvalid credentials');
-    }
-
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginDto : LoginDto): Promise<AuthResponseDto> {
+    const user = await this.authService.validateUser(loginDto);
     return this.authService.login(user);
   }
 }
