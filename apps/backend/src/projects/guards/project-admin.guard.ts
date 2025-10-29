@@ -22,8 +22,6 @@ export class ProjectAdminGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user; //Token
     const projectId = Number(request.params.projectId || request.body.projectId );
-    console.log("token userid: "+user.userid+" projectId: "+projectId);
-
 
     const userProject = await this.userProjectsService.findByUserAndProject(
       user.userid,

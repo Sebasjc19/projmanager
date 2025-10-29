@@ -20,7 +20,7 @@ export class ProjectOwnerGuard implements CanActivate {
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    const user = request.user; //Token
     const projectId = Number(request.params.projectId || request.body.projectId );
 
     const userProject = await this.userProjectsService.findByUserAndProject(
