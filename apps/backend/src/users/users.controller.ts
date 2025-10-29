@@ -1,154 +1,82 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OwnerGuard } from '../auth/guards/owner.guard';
 import { ProductionGuard } from '../common/guards/production.guard';
-import { ApiOperation, ApiBody, ApiCreatedResponse, ApiBadRequestResponse, ApiForbiddenResponse, ApiOkResponse, ApiBearerAuth, ApiNotFoundResponse, ApiParam, ApiUnauthorizedResponse, ApiConflictResponse, ApiTags } from '@nestjs/swagger';
-import { User } from './entities/user.entity';
-
+import { ApiOperation, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { TasksService } from '../tasks/tasks.service';
+import { UserResponseDto } from './dto/user.dto';
+import { TaskResponseDto } from '../tasks/dto/task.dto';
+import { ApiCommonErrors } from '../common/decorators/api-error-response.decorators';
+import { ApiStandardResponse } from '../common/decorators/api-response.decorators';
+/**
+ * Users management controller.
+ * Handles CRUD operations and task retrieval associated with users.
+ */
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly tasksService: TasksService
   ) { }
 
-  @ApiOperation({
-    summary: 'Create a new user'
-  })
-  @ApiBody({
-    type: CreateUserDto,
-    description: 'User details to create'
-  })
-  @ApiCreatedResponse({
-    description: 'User successfully created',
-    type: User
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid input data'
-  })
-  @ApiConflictResponse({
-    description: 'Data already exist'
-  })
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiStandardResponse(UserResponseDto, 'User created successfully', HttpStatus.CREATED)
+  @ApiCommonErrors({ badRequest: true, conflict: true })
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.create(createUserDto);
   }
 
-  @ApiOperation({
-    summary: 'Retrieve all users (development mode only)',
-    description: 'Available only in non-production environments for testing or seeding.',
-  })
-  @ApiOkResponse({
-    description: 'List of all users returned successfully',
-    type: [User]
-  })
-  @ApiForbiddenResponse({
-    description: 'Not allowed in production environment'
-  })
+  @ApiOperation({ summary: 'Retrieve all users', description: 'Available only in non-production environments for testing or seeding.' })
+  @ApiStandardResponse(UserResponseDto, 'Users retrieved successfully')
+  @ApiCommonErrors({ forbidden: true })
   @UseGuards(ProductionGuard)
   @Get()
-  findAll(): Promise<User[]> {
+  findAllUsers(): Promise<UserResponseDto[]> {
     return this.usersService.findAll();
   }
 
-
   @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Retrieve a user by ID',
-    description: 'Only the owner of the user can access this endpoint.',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    example: 1,
-    description: 'ID of the user to retrieve'
-  })
-  @ApiOkResponse({
-    description: 'User retrieved successfully',
-    type: User
-  })
-  @ApiUnauthorizedResponse({
-    description: 'JWT token missing or invalid'
-  })
-  @ApiForbiddenResponse({
-    description: 'User is not the owner'
-  })
-  @ApiNotFoundResponse({
-    description: 'User not found with the given ID'
-  })
+  @ApiOperation({ summary: 'Retrieve a user by ID', description: 'Requires owner privileges.' })
+  @ApiStandardResponse(UserResponseDto, 'User found')
+  @ApiCommonErrors({ unauthorized: true, forbidden: true, notFound: true })
   @UseGuards(JwtAuthGuard, OwnerGuard)
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<User> {
+  findOneUser(@Param('id') id: string): Promise<UserResponseDto> {
     return this.usersService.findOne(+id);
   }
 
   @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Update an existing user',
-    description: 'Only the owner of the user can update their data',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    example: 1,
-    description: 'ID of the user to update'
-  })
-  @ApiBody({
-    type: UpdateUserDto,
-    description: 'Fields to update for the user'
-  })
-  @ApiOkResponse({
-    description: 'User updated successfully',
-    type: User
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid input data'
-  })
-  @ApiUnauthorizedResponse({
-    description: 'JWT token missing or invalid'
-  })
-  @ApiForbiddenResponse({
-    description: 'User is not the owner'
-  })
-  @ApiNotFoundResponse({
-    description: 'User not found with the given ID'
-  })
+  @ApiOperation({ summary: 'Update a user', description: 'Requires owner privileges to modify user data.' })
+  @ApiStandardResponse(UserResponseDto, 'User updated successfully')
+  @ApiCommonErrors({ badRequest: true, unauthorized: true, forbidden: true, notFound: true })
   @UseGuards(JwtAuthGuard, OwnerGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User>  {
+  updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto>  {
     return this.usersService.update(+id, updateUserDto);
   }
 
   @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Delete an existing user',
-    description: 'Only the owner of the user can delete their account',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    example: 1,
-    description: 'ID of the user to delete'
-  })
-  @ApiOkResponse({
-    description: 'User deleted successfully'
-  })
-  @ApiUnauthorizedResponse({
-    description: 'JWT token missing or invalid'
-  })
-  @ApiForbiddenResponse({
-    description: 'User is not the owner'
-  })
-  @ApiNotFoundResponse({
-    description: 'User not found with the given ID'
-  })
+  @ApiOperation({ summary: 'Delete a user', description: 'Requires owner privileges.' })
+  @ApiStandardResponse(UserResponseDto, 'User deleted successfully')
+  @ApiCommonErrors({ unauthorized: true, forbidden: true, notFound: true })
   @UseGuards(JwtAuthGuard, OwnerGuard)
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
-    return this.usersService.remove(id);
+  removeUser(@Param('id') id: string): Promise<void> {
+    return this.usersService.remove(+id);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Retrieve all tasks assigned to a user', description: 'Requires owner privileges.' })
+  @ApiStandardResponse(TaskResponseDto, 'Tasks found')
+  @ApiCommonErrors({ unauthorized: true, forbidden: true, notFound: true })
+  @UseGuards(JwtAuthGuard, OwnerGuard)
+  @Get(':userId/tasks')
+  async findAllTasksByUser(@Param('userId') userId: string): Promise<TaskResponseDto[]> {
+    return this.tasksService.findAllByUser(+userId);
+  }
 }
