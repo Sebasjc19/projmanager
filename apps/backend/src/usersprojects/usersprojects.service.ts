@@ -6,158 +6,183 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectsService } from '../projects/projects.service';
 import { UsersService } from '../users/users.service';
-
+import { UserProjectResponseDto } from './dto/userproject.dto';
+import { Project } from 'src/projects/entities/project.entity';
+import { User } from 'src/users/entities/user.entity';
 /**
- * Service responsible for managing the relationship between Users and Projects.
- * 
- * Handles CRUD operations for the UserProject entity, which represents the association
- * of a user participating in a specific project with a given role.
+ * Service for managing user-project relationships.
+ * Handles CRUD operations for user roles in projects.
  */
 @Injectable()
 export class UsersprojectsService {
 
   constructor(
-      @InjectRepository(UserProject)
-      private readonly userProjectRepository: Repository<UserProject>,
+    @InjectRepository(UserProject)
+    private readonly userProjectRepository: Repository<UserProject>,
 
-      @Inject(forwardRef(()=> ProjectsService))
-      private readonly projectsService: ProjectsService,
-      private readonly usersService: UsersService
-    ) {}
+    @Inject(forwardRef(() => ProjectsService))
+    private readonly projectsService: ProjectsService,
+    private readonly usersService: UsersService
+  ) { }
 
   /**
-   * Creates a new user-project relationship.
-   * 
-   * @param createUsersprojectDto Data Transfer Object containing the userId, projectId, and role.
-   * @returns The created UserProject entity.
-   * @throws {NotFoundException} If the specified user or project does not exist.
-   */
-  async create(createUsersprojectDto: CreateUsersprojectDto) {
+  * Creates a new user-project relationship.
+  * 
+  * @param createUsersprojectDto Relationship data including userId, projectId, and role
+  */
+  async create(createUsersprojectDto: CreateUsersprojectDto): Promise<UserProjectResponseDto> {
     const user = await this.usersService.findOne(createUsersprojectDto.userId);
     const project = await this.projectsService.findOne(createUsersprojectDto.projectId);
 
     const userProject = this.userProjectRepository.create({
-      user: user,
-      project: project,
+      user: { id: createUsersprojectDto.userId } as User,
+      project: { id: createUsersprojectDto.projectId } as Project,
       role: createUsersprojectDto.role
     })
 
-    return await this.userProjectRepository.save(userProject);
-
-  }
-
-   /**
-   * Retrieves all user-project relationships.
-   * 
-   * @experimental This method is for testing and debugging purposes.
-   * @returns A list of all UserProject entities.
-   */
-  async findAll() {
-    return await this.userProjectRepository.find({
-      relations: ['user', 'project' ]
+    const savedUserProject = await this.userProjectRepository.save(userProject);
+    const userProjectWithRelations = await this.userProjectRepository.findOne({
+      where: { id: savedUserProject.id },
+      relations: ['user', 'project']
     });
+    if (!userProjectWithRelations) {
+      throw new NotFoundException(`User-Project relation with ID ${savedUserProject.id} not found after creation`);
+    }
+    return this.toResponseDto(userProjectWithRelations);
+
   }
 
   /**
-   * Retrieves all projects associated with a specific user.
+  * Retrieves all user-project relationships.
+  */
+  async findAll(): Promise<UserProjectResponseDto[]> {
+    const userProject = await this.userProjectRepository.find({
+      relations: ['user', 'project']
+    });
+    return userProject.map(userProject => this.toResponseDto(userProject))
+  }
+
+  /**
+   * Retrieves all projects associated with a user.
    * 
-   * @param userId The ID of the user whose projects should be retrieved.
-   * @returns A list of UserProject entities linked to the user.
-   * @throws {NotFoundException} If the user has no associated projects.
+   * @param userId User ID
    */
-  async findAllProjectsByUser(userId: number) {
+  async findAllProjectsByUser(userId: number): Promise<UserProjectResponseDto[]> {
     const usersProjects = await this.userProjectRepository.find({
       where:
-        {user: {id: userId}},
+        { user: { id: userId } },
+      relations: ['user', 'project']
     });
-    if (!usersProjects.length){
-      throw new NotFoundException(`Projects with User ID ${userId} not found`)
+    if (!usersProjects.length) {
+      return [];
     }
-    return usersProjects;
-  }
-  
-  /**
-   * Retrieves all users associated with a specific project.
-   * 
-   * @param projectId The ID of the project whose users should be retrieved.
-   * @returns A list of UserProject entities linked to the project.
-   * @throws {NotFoundException} If the project has no associated users.
-   */
-  async findAllUsersByProject(projectId: number) {
-    const usersProjects = await this.userProjectRepository.find({
-      where:
-        {project: {id: projectId}},
-    });
-    if (!usersProjects.length){
-      throw new NotFoundException(`Users with Project ID ${projectId} not found`)
-    }
-    return usersProjects;
+    return usersProjects.map(userProject => this.toResponseDto(userProject));
   }
 
   /**
-   * Retrieves the relationship between a specific user and project.
+   * Retrieves all users associated with a project.
    * 
-   * @param userId The ID of the user.
-   * @param projectId The ID of the project.
-   * @returns The UserProject entity if found.
-   * @throws {NotFoundException} If no relationship exists between the given user and project.
+   * @param projectId Project ID
    */
-  async findByUserAndProject(userId: number, projectId: number) {
+  async findAllUsersByProject(projectId: number): Promise<UserProjectResponseDto[]> {
+    const usersProjects = await this.userProjectRepository.find({
+      where:
+        { project: { id: projectId } },
+      relations: ['user', 'project']
+    });
+    if (!usersProjects.length) {
+      return [];
+    }
+    return usersProjects.map(userProject => this.toResponseDto(userProject));
+  }
+
+  /**
+   * Retrieves the relationship between a user and project.
+   * 
+   * @param userId User ID
+   * @param projectId Project ID
+   */
+  async findByUserAndProject(userId: number, projectId: number): Promise<UserProjectResponseDto> {
     const userProject = await this.userProjectRepository.findOne({
       where: {
-        user: {id: userId}, 
-        project: {id: projectId}, 
-      }
+        user: { id: userId },
+        project: { id: projectId },
+      },
+      relations: ['user', 'project']
     });
-    if (!userProject){
-      throw new NotFoundException(`Not found relation between user and project`)
+    if (!userProject) {
+      throw new NotFoundException(`Relation between user ${userId} and project ${projectId} not found`);
     }
-    return userProject;
+    return this.toResponseDto(userProject);
   }
 
   /**
-   * Retrieves a UserProject relationship by its ID.
+   * Retrieves a user-project relationship by ID.
    * 
-   * @param id The ID of the UserProject to retrieve.
-   * @returns The UserProject entity.
-   * @throws {NotFoundException} If the UserProject with the specified ID is not found.
+   * @param id Relation ID
    */
-  async findOne(id: number) {
-    const userProject = await this.userProjectRepository.findOneBy({id});
-    if(!userProject){
-      throw new NotFoundException(`User project with ID ${id} not found`);
-    }
-    return userProject;
-  }
-
-  /**
-   * Updates an existing UserProject relationship.
-   * 
-   * @param id The ID of the UserProject to update.
-   * @param updateUsersprojectDto Data Transfer Object containing the updated fields.
-   * @returns The updated UserProject entity.
-   */
-  async update(id: number, updateUsersprojectDto: UpdateUsersprojectDto) {
-    await this.userProjectRepository.update(id,{
-      user: {id: updateUsersprojectDto.userId},
-      project: {id: updateUsersprojectDto.projectId},
-      role: updateUsersprojectDto.role
+  async findOne(id: number): Promise<UserProjectResponseDto> {
+    const userProject = await this.userProjectRepository.findOne({
+      where: { id },
+      relations: ['user', 'project']
     });
-    return await this.findOne(id);
+    if (!userProject) {
+      throw new NotFoundException(`User-Project relation with ID ${id} not found`);
+    }
+    return this.toResponseDto(userProject);
   }
 
   /**
-   * Deletes a UserProject relationship by its ID.
+   * Updates the role of a user in a project.
    * 
-   * @param id The ID of the UserProject to delete.
-   * @throws {NotFoundException} If the UserProject with the specified ID does not exist.
+   * @param projectId Project ID
+   * @param userId User ID
+   * @param updateUsersprojectDto Update data
+   */
+  async update(projectId: number, userId: number, updateUsersprojectDto: UpdateUsersprojectDto): Promise<UserProjectResponseDto> {
+    const userProject = await this.userProjectRepository.findOne({
+      where: {
+        project: { id: projectId },
+        user: { id: userId }
+      },
+      relations: ['user', 'project']
+    });
+
+    if (!userProject) {
+      throw new NotFoundException(
+        `User ${userId} not found in project ${projectId}`
+      );
+    }
+
+    userProject.role = updateUsersprojectDto.role;
+    const savedUserProject = await this.userProjectRepository.save(userProject);
+    return this.toResponseDto(savedUserProject);
+  }
+
+  /**
+   * Removes a user-project relationship by ID.
+   * 
+   * @param id Relation ID
    */
   async remove(id: number): Promise<void> {
-    const userProject = await this.findOne(id);
-    if(!userProject){
-      throw new NotFoundException(`User project with ${id} not found`);
+    const userProject = await this.userProjectRepository.findOne({ where: { id } });
+    if (!userProject) {
+      throw new NotFoundException(`User-Project relation with ID ${id} not found`);
     }
     await this.userProjectRepository.remove(userProject);
   }
 
+  /**
+   * Maps a UserProject entity to a UserProjectResponseDto.
+   */
+  private toResponseDto(userProject: UserProject): UserProjectResponseDto {
+    if (!userProject.user || !userProject.project) {
+      throw new Error('UserProject must have user and project relations loaded');
+    }
+    return {
+      user: userProject.user.id,
+      project: userProject.project.id,
+      role: userProject.role
+    };
+  }
 }
