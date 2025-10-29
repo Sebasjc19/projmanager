@@ -16,6 +16,10 @@ import { ProjectResponseDto } from './dto/project.dto';
 import { ApiCommonErrors } from '../common/decorators/api-error-response.decorators';
 import { TaskResponseDto } from '../tasks/dto/task.dto';
 import { UpdateTaskDto } from '../tasks/dto/update-task.dto';
+import { CreateUsersprojectDto } from '../usersprojects/dto/create-usersproject.dto';
+import { UpdateUsersprojectDto } from '../usersprojects/dto/update-usersproject.dto';
+import { UserProjectResponseDto } from '../usersprojects/dto/userproject.dto';
+import { UsersprojectsService } from '../usersprojects/usersprojects.service';
 /**
  * Projects management controller.
  * Handles CRUD operations and task management associated with projects.
@@ -25,7 +29,8 @@ import { UpdateTaskDto } from '../tasks/dto/update-task.dto';
 export class ProjectsController {
   constructor(
     private readonly projectsService: ProjectsService,
-    private readonly tasksService: TasksService
+    private readonly tasksService: TasksService,
+    private readonly usersProjectsService: UsersprojectsService
   ) {}
 
   @Post()
@@ -76,7 +81,7 @@ export class ProjectsController {
   removeProject(@Param('projectId') projectId: string) {
     return this.projectsService.remove(+projectId);
   }
-
+  //----------------------Task Relation----------------------
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new project task', description: 'Requires project admin privileges.' })
   @ApiStandardResponse(TaskResponseDto, 'Task created successfully', HttpStatus.CREATED)
@@ -125,5 +130,45 @@ export class ProjectsController {
   @Delete(':projectId/tasks/:taskId')
   removeTask(@Param('projectId') projectId: string, @Param('taskId') taskId: string): Promise<void> {
     return this.tasksService.remove(+projectId, +taskId);
+  }
+  //----------------------User-Project Relation----------------------
+    @ApiBearerAuth()
+  @ApiOperation({ summary: 'Add user to project', description: 'Requires project admin privileges.' })
+  @ApiStandardResponse(UserProjectResponseDto, 'User added successfully', HttpStatus.CREATED)
+  @ApiCommonErrors({ badRequest: true, unauthorized: true, forbidden: true })
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @Post(':projectId/users')
+  addUserToProject(@Param('projectId') projectId: string, @Body() createUsersprojectDto: CreateUsersprojectDto) {
+    return this.usersProjectsService.create(createUsersprojectDto);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all users in project', description: 'Requires be part of the project.' })
+  @ApiStandardResponse(UserProjectResponseDto, 'Users retrieved successfully')
+  @ApiCommonErrors({ unauthorized: true, forbidden: true, notFound: true })
+  @UseGuards(JwtAuthGuard, ProjectMemberGuard)
+  @Get(':projectId/users')
+  getProjectUsers(@Param('projectId') projectId: string) {
+    return this.usersProjectsService.findAllUsersByProject(+projectId);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update user role in project', description: 'Requires project admin privileges.' })
+  @ApiStandardResponse(UserProjectResponseDto, 'Role updated successfully')
+  @ApiCommonErrors({ badRequest: true, unauthorized: true, forbidden: true, notFound: true })
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @Patch(':projectId/users/:userId')
+  updateUserRole(@Param('projectId') projectId: string, @Param('userId') userId: string, @Body() updateUsersprojectDto: UpdateUsersprojectDto) {
+    return this.usersProjectsService.update(+projectId, +userId, updateUsersprojectDto);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remove user from project', description: 'Requires project admin privileges.' })
+  @ApiStandardResponse(UserProjectResponseDto, 'User removed successfully')
+  @ApiCommonErrors({ unauthorized: true, forbidden: true, notFound: true })
+  @UseGuards(JwtAuthGuard, ProjectAdminGuard)
+  @Delete(':projectId/users/:userId')
+  removeUserFromProject(@Param('projectId') projectId: string, @Param('userId') userId: string) {
+    return this.usersProjectsService.removeByProjectAndUser(+projectId, +userId);
   }
 }

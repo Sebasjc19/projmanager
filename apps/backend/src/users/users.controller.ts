@@ -11,6 +11,8 @@ import { UserResponseDto } from './dto/user.dto';
 import { TaskResponseDto } from '../tasks/dto/task.dto';
 import { ApiCommonErrors } from '../common/decorators/api-error-response.decorators';
 import { ApiStandardResponse } from '../common/decorators/api-response.decorators';
+import { UserProjectResponseDto } from '../usersprojects/dto/userproject.dto';
+import { UsersprojectsService } from '../usersprojects/usersprojects.service';
 /**
  * Users management controller.
  * Handles CRUD operations and task retrieval associated with users.
@@ -20,7 +22,8 @@ import { ApiStandardResponse } from '../common/decorators/api-response.decorator
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly tasksService: TasksService
+    private readonly tasksService: TasksService,
+    private readonly usersProjectsService: UsersprojectsService
   ) { }
 
   @ApiOperation({ summary: 'Create a new user' })
@@ -69,7 +72,7 @@ export class UsersController {
   removeUser(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(+id);
   }
-
+  //----------------------Task Relation----------------------
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Retrieve all tasks assigned to a user', description: 'Requires owner privileges.' })
   @ApiStandardResponse(TaskResponseDto, 'Tasks found')
@@ -78,5 +81,15 @@ export class UsersController {
   @Get(':userId/tasks')
   async findAllTasksByUser(@Param('userId') userId: string): Promise<TaskResponseDto[]> {
     return this.tasksService.findAllByUser(+userId);
+  }
+  //----------------------User-Project Relation----------------------
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all projects of a user', description: 'Requires owner privileges.' })
+  @ApiStandardResponse(UserProjectResponseDto, 'Projects retrieved successfully')
+  @ApiCommonErrors({ unauthorized: true, forbidden: true, notFound: true })
+  @UseGuards(JwtAuthGuard, OwnerGuard)
+  @Get(':userId/projects')
+  getUserProjects(@Param('userId') userId: string) {
+    return this.usersProjectsService.findAllProjectsByUser(+userId);
   }
 }
