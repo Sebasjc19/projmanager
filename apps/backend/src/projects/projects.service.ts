@@ -6,14 +6,11 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersprojectsService } from '../usersprojects/usersprojects.service';
 import { UserRole } from '../usersprojects/enums/user-role.enum';
+import { ProjectResponseDto } from './dto/project.dto';
 
 /**
- * Service responsible for managing application projects.
- * 
- * Provides methods to create, retrieve, update, and delete project entities.
- * 
- * This service interacts directly with the database through the Project repository
- * and ensures proper exception handling for common scenarios such as missing records.
+ * Service responsible for managing projects.
+ * Handles CRUD operations and returns standardized DTOs.
  */
 @Injectable()
 export class ProjectsService {
@@ -23,82 +20,93 @@ export class ProjectsService {
 
     @Inject(forwardRef(() => UsersprojectsService))
     private readonly usersProjectsService: UsersprojectsService,
-  ) {}
+  ) { }
 
   /**
-   * Creates a new project and assigns the owner.
+   * Creates a new project and assigns an owner.
    *
-   * @param createProjectDto - Data Transfer Object containing project details.
-   * @param ownerId - The ID of the user who will be set as the project owner.
-   * @returns The created Project entity.
+   * @param createProjectDto Project data including title, description, and dates
+   * @param ownerId ID of the user who will own the project
    */
-  async create(createProjectDto: CreateProjectDto, ownerId: number,): Promise<Project> {
-    const project = await this.projectRepository.save({
-      title: createProjectDto.title,
-      description: createProjectDto.description,
-      startDate: createProjectDto.startDate,
-      endDate: createProjectDto.endDate,
-    });
+  async create(createProjectDto: CreateProjectDto, ownerId: number,): Promise<ProjectResponseDto> {
+    const project = await this.projectRepository.create(createProjectDto);
+    const savedProject = await this.projectRepository.save(project)
     await this.usersProjectsService.create({
       userId: ownerId,
-      projectId: project.id,
+      projectId: savedProject.id,
       role: UserRole.OWNER,
     });
-    return project;
+    return this.toResponseDto(savedProject);
   }
-  
+
   /**
-   * Retrieves all projects with their associated user projects and tasks.
-   * 
-   * @returns An array of all Project entities, including their associated user projects and tasks.
+   * Retrieves all projects.
    */
-  async findAll(): Promise<Project[]> {
-    return await this.projectRepository.find({
-      relations: ['tasks'],
-    });
+  async findAll(): Promise<ProjectResponseDto[]> {
+    const projects = await this.projectRepository.find();
+
+    return projects.map(project => this.toResponseDto(project));
   }
-  
+
   /**
-   * Retrieves a single project by its ID, including its associated user projects and tasks.
+   * Retrieves a single project by ID.
    * 
-   * @param id - The ID of the project to retrieve.
-   * @returns The Project entity with the specified ID, including its associated user projects and tasks.
-   * @throws Error if the project with the specified ID is not found.
+   * @param projectId Project ID
    */
-  async findOne(id: number): Promise<Project> {
+  async findOne(projectId: number): Promise<ProjectResponseDto> {
     const project = await this.projectRepository.findOne({
-      where: { id },
-      relations: ['tasks',]
-     });
+      where: { id: projectId },
+      relations: ['tasks']
+    });
     if (!project) {
-      throw new NotFoundException(`Project with ID ${id} not found`);
+      throw new NotFoundException(`Project with ID ${projectId} not found`);
     }
-    return project;
+    return this.toResponseDto(project);
   }
 
   /**
-   * Updates an existing project with new details.
+   * Updates an existing project.
    * 
-   * @param id - The ID of the project to update. 
-   * @param updateProjectDto - Data Transfer Object containing updated project details.
-   * @returns - The updated Project entity.
-   * @throws Error if the project with the specified ID is not found.
+   * @param projectId Project ID to update
+   * @param updateProjectDto Updated project data
    */
-  async update(id: number, updateProjectDto: UpdateProjectDto,): Promise<Project> {
-    await this.projectRepository.update(id, updateProjectDto);
-    return await this.findOne(id);
+  async update(projectId: number, updateProjectDto: UpdateProjectDto,): Promise<ProjectResponseDto> {
+    const project = await this.projectRepository.findOne({
+      where: { id: projectId },
+      relations: ['tasks']
+    });
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${projectId} not found`);
+    }
+    Object.assign(project, updateProjectDto);
+    const updatedProject = await this.projectRepository.save(project);
+    return this.toResponseDto(updatedProject);
   }
 
   /**
-   * Removes a project by its ID.
+   * Deletes a project by ID.
    * 
-   * @param id - The ID of the project to remove.
+   * @param id Project ID to delete
    */
   async remove(id: number): Promise<void> {
-    const project = await this.findOne(id);
-    if(!project){
-      throw new NotFoundException(`Project with ${id} not found`);
+    const project = await this.projectRepository.findOne({ where: { id } });
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${id} not found`)
     }
     await this.projectRepository.remove(project);
+  }
+
+  /**
+   * Maps a Project entity to a ProjectResponseDto.
+   */
+  private toResponseDto(project: Project): ProjectResponseDto {
+    return {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      startDate: project.startDate?.toISOString().split('T')[0],
+      endDate: project.endDate?.toISOString().split('T')[0],
+      status: project.status
+    };
   }
 }
