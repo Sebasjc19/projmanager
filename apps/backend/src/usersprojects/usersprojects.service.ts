@@ -173,6 +173,25 @@ export class UsersprojectsService {
   }
 
   /**
+   * Removes a user-project realtionship by User id and Project id
+   * 
+   * @param projectId Project id
+   * @param userId User id
+   */
+  async removeByProjectAndUser(projectId: number, userId: number): Promise<void> {
+    const userProject = await this.userProjectRepository.findOne({
+      where: {
+        project: { id: projectId },
+        user: { id: userId }
+      }
+    });
+    if (!userProject) {
+      throw new NotFoundException(`User ${userId} not found in project ${projectId}`);
+    }
+    await this.userProjectRepository.remove(userProject);
+  }
+
+  /**
    * Maps a UserProject entity to a UserProjectResponseDto.
    */
   private toResponseDto(userProject: UserProject): UserProjectResponseDto {
