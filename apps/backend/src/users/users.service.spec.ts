@@ -78,7 +78,7 @@ describe('UsersService', () => {
   });
 
 
-   describe('findAll', () => {
+  describe('findAll', () => {
     it('should return all users as DTOs', async () => {
       const users = [
         { id: 1, name: 'User A', email: 'a@example.com' },
@@ -106,7 +106,7 @@ describe('UsersService', () => {
     });
   });
 
- describe('findOne', () => {
+  describe('findOne', () => {
     it('should return a user by ID as DTO', async () => {
       const user = { id: 1, name: 'John Doe', email: 'john@example.com' };
       userRepository.findOneBy.mockResolvedValue(user);
@@ -130,7 +130,7 @@ describe('UsersService', () => {
     });
   });
 
-   describe('findByEmail', () => {
+  describe('findByEmail', () => {
     it('should return a user by email as DTO', async () => {
       const user = { id: 1, name: 'John Doe', email: 'john@example.com' };
       userRepository.findOneBy.mockResolvedValue(user);
@@ -154,7 +154,7 @@ describe('UsersService', () => {
     });
   });
 
-describe('findByIds', () => {
+  describe('findByIds', () => {
     it('should return multiple users by IDs', async () => {
       const ids = [1, 2, 3];
       const users = [
@@ -201,7 +201,7 @@ describe('findByIds', () => {
     });
   });
 
- describe('update', () => {
+  describe('update', () => {
     it('should update a user and return DTO', async () => {
       const updateDto = { name: 'Updated Name' };
       const existingUser = {

@@ -55,11 +55,11 @@ describe('UsersprojectsService', () => {
       const dto = { userId: 1, projectId: 2, role: UserRole.MEMBER };
       const user = { id: 1, name: 'User A', email: 'user@example.com' };
       const project = { id: 2, title: 'Project A' };
-      const savedUserProject = { 
-        id: 1, 
-        user: { id: 1 }, 
-        project: { id: 2 }, 
-        role: UserRole.MEMBER 
+      const savedUserProject = {
+        id: 1,
+        user: { id: 1 },
+        project: { id: 2 },
+        role: UserRole.MEMBER
       };
       const userProjectWithRelations = {
         id: 1,
@@ -114,25 +114,25 @@ describe('UsersprojectsService', () => {
   describe('findAll', () => {
     it('should return all user-project relationships as DTOs', async () => {
       const userProjects = [
-        { 
-          id: 1, 
-          user: { id: 1, name: 'User A' }, 
-          project: { id: 2, title: 'Project A' }, 
-          role: UserRole.MEMBER 
+        {
+          id: 1,
+          user: { id: 1, name: 'User A' },
+          project: { id: 2, title: 'Project A' },
+          role: UserRole.MEMBER
         },
-        { 
-          id: 2, 
-          user: { id: 2, name: 'User B' }, 
-          project: { id: 3, title: 'Project B' }, 
-          role: UserRole.ADMIN 
+        {
+          id: 2,
+          user: { id: 2, name: 'User B' },
+          project: { id: 3, title: 'Project B' },
+          role: UserRole.ADMIN
         },
       ];
       userProjectRepository.find.mockResolvedValue(userProjects);
 
       const result = await service.findAll();
 
-      expect(userProjectRepository.find).toHaveBeenCalledWith({ 
-        relations: ['user', 'project'] 
+      expect(userProjectRepository.find).toHaveBeenCalledWith({
+        relations: ['user', 'project']
       });
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
@@ -162,7 +162,7 @@ describe('UsersprojectsService', () => {
 
       const result = await service.findAllProjectsByUser(userId);
 
-      expect(userProjectRepository.find).toHaveBeenCalledWith({ 
+      expect(userProjectRepository.find).toHaveBeenCalledWith({
         where: { user: { id: userId } },
         relations: ['user', 'project']
       });
@@ -189,7 +189,7 @@ describe('UsersprojectsService', () => {
 
       const result = await service.findAllUsersByProject(projectId);
 
-      expect(userProjectRepository.find).toHaveBeenCalledWith({ 
+      expect(userProjectRepository.find).toHaveBeenCalledWith({
         where: { project: { id: projectId } },
         relations: ['user', 'project']
       });
@@ -318,8 +318,8 @@ describe('UsersprojectsService', () => {
 
       await service.remove(1);
 
-      expect(userProjectRepository.findOne).toHaveBeenCalledWith({ 
-        where: { id: 1 } 
+      expect(userProjectRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 1 }
       });
       expect(userProjectRepository.remove).toHaveBeenCalledWith(userProject);
     });
@@ -332,4 +332,50 @@ describe('UsersprojectsService', () => {
       );
     });
   });
+
+  describe('removeByProjectAndUser', () => {
+    it('should remove a user-project relationship by project and user ID', async () => {
+      const projectId = 1;
+      const userId = 2;
+      const userProject = {
+        id: 1,
+        user: { id: userId },
+        project: { id: projectId },
+        role: UserRole.MEMBER
+      };
+
+      userProjectRepository.findOne.mockResolvedValue(userProject);
+      userProjectRepository.remove.mockResolvedValue(undefined);
+
+      await service.removeByProjectAndUser(projectId, userId);
+
+      expect(userProjectRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          project: { id: projectId },
+          user: { id: userId }
+        }
+      });
+      expect(userProjectRepository.remove).toHaveBeenCalledWith(userProject);
+    });
+
+    it('should throw NotFoundException when relationship does not exist', async () => {
+      const projectId = 1;
+      const userId = 2;
+
+      userProjectRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.removeByProjectAndUser(projectId, userId)).rejects.toThrow(
+        new NotFoundException(`User ${userId} not found in project ${projectId}`)
+      );
+
+      expect(userProjectRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          project: { id: projectId },
+          user: { id: userId }
+        }
+      });
+      expect(userProjectRepository.remove).not.toHaveBeenCalled();
+    });
+  });
+
 });
