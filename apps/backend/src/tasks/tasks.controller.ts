@@ -1,34 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiStandardResponse } from '../common/decorators/api-response.decorators';
+import { TaskResponseDto } from './dto/task.dto';
+import { ApiCommonErrors } from '../common/decorators/api-error-response.decorators';
+import { ProductionGuard } from '../common/guards/production.guard';
+/**
+ * Basic Task management controller.
+ * Handles find, update and delete operations.
+ */
+@ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @Post()
-  create(@Body() createTaskDto: CreateTaskDto) {
-    return this.tasksService.create(createTaskDto);
-  }
-
   @Get()
+  @ApiOperation({ summary: 'Retrieve all tasks', description: 'Available only in non-production environments for testing or seeding.'})
+  @ApiStandardResponse(TaskResponseDto, 'Tasks retrieved successfully')
+  @ApiCommonErrors({ unauthorized: true })
+  @UseGuards(ProductionGuard)
   findAll() {
     return this.tasksService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.tasksService.update(+id, updateTaskDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tasksService.remove(+id);
-  }
 }
