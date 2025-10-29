@@ -3,17 +3,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from '../usersprojects/enums/user-role.enum';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserResponseDto } from './dto/user.dto';
 /**
- * Service responsible for managing application users.
- * 
- * Provides methods to create, retrieve, update, and delete user entities.
- * Also includes helper methods for fetching users by ID or email.
- * 
- * This service interacts directly with the database through the User repository
- * and ensures proper exception handling for common scenarios such as duplicate emails
- * or missing records.
+ * Service responsible for managing users.
+ * Handles CRUD operations and returns standardized DTOs.
  */
 @Injectable()
 export class UsersService {
@@ -26,87 +21,116 @@ export class UsersService {
   /**
    * Creates a new user.
    * 
-   * @param createUserDto Data Transfer Object containing the user details.
-   * @returns The created user entity.
-   * @throws {ConflictException} If the email specified already exist.
+   * @param createUserDto User data including name and email
    */
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const user = this.userRepository.create(createUserDto);
     try{
-      return await this.userRepository.save(user);  
+      const savedUser = await this.userRepository.save(user);  
+      return this.toResponseDto(savedUser);
     } catch (error){
-      if (error) {
-        throw new ConflictException(`Email ${createUserDto.email} already exist`)
+      if (error.code === '23505') {
+        throw new ConflictException(`Email ${createUserDto.email} already exist`);
       }
+      throw error;
     }
-    return await this.userRepository.save(user);
-  }
-
-   /**
-   * Retrieves all users.
-   * 
-   * @experimental This method is for testing and debugging purposes.
-   * @returns A list of all User entities.
-   */
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+    
   }
 
   /**
-   * Retrieves a single user by its ID, including its associated user projects and tasks.
-   * 
-   * @param id The id of the user to retrieve.
-   * @returns The user entity with the specified ID, and its associated user projects and tasks.
-   * @throws Error if the user with the specified ID is not found
+   * Retrieves all users.
    */
-  async findOne(id: number): Promise<User> {
+  async findAll(): Promise<UserResponseDto[]> {
+    const users = await this.userRepository.find();
+    return users.map(user => this.toResponseDto(user));
+  }
+
+  /**
+   * Retrieves a single user by ID.
+   * 
+   * @param id User ID
+   */
+  async findOne(id: number): Promise<UserResponseDto> {
     const user = await this.userRepository.findOneBy({ id }); 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return user;
+    return this.toResponseDto(user);
   }
 
   /**
-   * Retrieves a single user by its EMAIL, including its associated user projects and tasks.
+   * Retrieves a single user by email.
    * 
-   * @param email The email of the user to retrieve.
-   * @returns The user entity with the specified EMAIL, and its associated user projects and tasks.
-   * @throws Error if the user with the specified EMAIL is not found
+   * @param email User email
    */
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string): Promise<UserResponseDto> {
     const user = await this.userRepository.findOneBy({ email });
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
-    return user;
+    return this.toResponseDto(user);
   }
 
   /**
-   * Updates an existing user with new details.
+   * Retrieves multiple users by IDs.
    * 
-   * @param id - The ID of the project to update. 
-   * @param updateUserDto - Data Transfer Object containing updated user details.
-   * @returns - The updated user entity.
-   * @throws Error if the user with the specified ID is not found.
+   * @param ids Array of user IDs.
    */
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
-    Object.assign(user, updateUserDto);
-    return await this.userRepository.save(user);
+  async findByIds(ids: number[]): Promise<User[]> {
+    if (!ids || ids.length === 0) {
+      return [];
+    }
+
+    const users = await this.userRepository.find({
+      where: { id: In(ids) }
+    });
+
+    if (users.length !== ids.length) {
+      throw new NotFoundException(
+        `One or more users not found. Expected ${ids.length}, found ${users.length}`
+      );
+    }
+
+    return users;
   }
 
   /**
-   * Removes a user by its ID.
+   * Updates an existing user.
    * 
-   * @param id - The ID of the user to remove.
+   * @param id User ID to update
+   * @param updateUserDto Updated user data
+   */
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+    throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    Object.assign(user, updateUserDto);
+    const updatedUser = await this.userRepository.save(user);
+    return this.toResponseDto(updatedUser);
+  }
+
+   /**
+   * Deletes a user by ID.
+   * 
+   * @param id User ID to delete
    */
   async remove(id: number): Promise<void> {
-    const user = await this.findOne(id);
+    const user = await this.userRepository.findOne({where: { id }});
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     await this.userRepository.remove(user);
   }
 
+  /**
+   * Maps a User entity to a UserResponseEntity.
+   */
+  private toResponseDto(user: User): UserResponseDto {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    };
+  }
 }
