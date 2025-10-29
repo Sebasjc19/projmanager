@@ -10,11 +10,16 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OwnerGuard } from '../auth/guards/owner.guard';
 import { ProductionGuard } from '../common/guards/production.guard';
 import { TaskState } from '../tasks/enums/task-state.enum';
+import { UsersprojectsService } from '../usersprojects/usersprojects.service';
+import { UserProjectResponseDto } from '../usersprojects/dto/userproject.dto';
+import { UserRole } from '../usersprojects/enums/user-role.enum';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: jest.Mocked<UsersService>;
   let tasksService: jest.Mocked<TasksService>;
+  let usersprojectsService: jest.Mocked<UsersprojectsService>;
+
 
   beforeEach(async () => {
     const mockUsersService = {
@@ -29,11 +34,16 @@ describe('UsersController', () => {
       findAllByUser: jest.fn(),
     };
 
+    const mockUsersprojectsService = {
+      findAllProjectsByUser: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
         { provide: UsersService, useValue: mockUsersService },
         { provide: TasksService, useValue: mockTasksService },
+        { provide: UsersprojectsService, useValue: mockUsersprojectsService }
       ],
     })
       .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
@@ -44,6 +54,7 @@ describe('UsersController', () => {
     controller = module.get<UsersController>(UsersController);
     usersService = module.get(UsersService);
     tasksService = module.get(TasksService);
+    usersprojectsService = module.get(UsersprojectsService)
   });
 
   afterEach(() => {
@@ -152,7 +163,9 @@ describe('UsersController', () => {
       expect(usersService.remove).toHaveBeenCalledWith(1);
     });
   });
-
+  
+  // ==================== TASK TESTS ====================
+  
   describe('findAllTasksByUser', () => {
     it('should return all tasks assigned to a user', async () => {
       const userId = '1';
@@ -196,6 +209,37 @@ describe('UsersController', () => {
       const result = await controller.findAllTasksByUser(userId);
 
       expect(tasksService.findAllByUser).toHaveBeenCalledWith(1);
+      expect(result).toEqual([]);
+    });
+  });
+
+  // ==================== USER-PROJECT TESTS ====================
+
+  describe('getUserProjects', () => {
+    it('should return all projects of a user', async () => {
+      const userId = '1';
+      const expectedResult: UserProjectResponseDto[] = [
+        { user: 1, project: 1, role: UserRole.OWNER },
+        { user: 1, project: 2, role: UserRole.MEMBER },
+      ];
+
+      usersprojectsService.findAllProjectsByUser.mockResolvedValue(expectedResult);
+
+      const result = await controller.getUserProjects(userId);
+
+      expect(usersprojectsService.findAllProjectsByUser).toHaveBeenCalledWith(1);
+      expect(result).toEqual(expectedResult);
+      expect(result).toHaveLength(2);
+    });
+
+    it('should return empty array when user has no projects', async () => {
+      const userId = '1';
+
+      usersprojectsService.findAllProjectsByUser.mockResolvedValue([]);
+
+      const result = await controller.getUserProjects(userId);
+
+      expect(usersprojectsService.findAllProjectsByUser).toHaveBeenCalledWith(1);
       expect(result).toEqual([]);
     });
   });
