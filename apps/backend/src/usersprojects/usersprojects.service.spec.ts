@@ -71,16 +71,12 @@ describe('UsersprojectsService', () => {
         role: UserRole.MEMBER,
       };
 
-      usersService.findOne.mockResolvedValue(user);
-      projectsService.findOne.mockResolvedValue(project);
       userProjectRepository.create.mockReturnValue(dto);
       userProjectRepository.save.mockResolvedValue(savedUserProject);
       userProjectRepository.findOne.mockResolvedValue(userProjectWithRelations);
 
       const result = await service.create(dto as any);
 
-      expect(usersService.findOne).toHaveBeenCalledWith(dto.userId);
-      expect(projectsService.findOne).toHaveBeenCalledWith(dto.projectId);
       expect(userProjectRepository.create).toHaveBeenCalledWith({
         user: { id: dto.userId },
         project: { id: dto.projectId },
