@@ -72,6 +72,20 @@ export class UsersService {
   }
 
   /**
+   * Retrieves a user by email including password for authentication.
+   * 
+   * @param email User email
+   * @internal Only for authentication purposes
+   */
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .addSelect('user.password')
+      .getOne();
+}
+
+  /**
    * Retrieves multiple users by IDs.
    * 
    * @param ids Array of user IDs.
