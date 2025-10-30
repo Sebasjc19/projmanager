@@ -56,15 +56,20 @@ describe('ProjectsController', () => {
       providers: [
         { provide: ProjectsService, useValue: mockProjectsService },
         { provide: TasksService, useValue: mockTasksService },
-        { provide: UsersprojectsService, useValue: mockUsersprojectsService }
+        { provide: UsersprojectsService, useValue: mockUsersprojectsService },
       ],
     })
-    .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-    .overrideGuard(ProjectMemberGuard).useValue({ canActivate: () => true })
-    .overrideGuard(ProjectAdminGuard).useValue({ canActivate: () => true })
-    .overrideGuard(ProjectOwnerGuard).useValue({ canActivate: () => true })
-    .overrideGuard(ProductionGuard).useValue({ canActivate: () => true })
-    .compile();
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProjectMemberGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProjectAdminGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProjectOwnerGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProductionGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<ProjectsController>(ProjectsController);
     projectsService = module.get(ProjectsService);
@@ -339,11 +344,15 @@ describe('ProjectsController', () => {
         { user: 2, project: 1, role: UserRole.MEMBER },
       ];
 
-      usersprojectsService.findAllUsersByProject.mockResolvedValue(expectedResult);
+      usersprojectsService.findAllUsersByProject.mockResolvedValue(
+        expectedResult,
+      );
 
       const result = await controller.getProjectUsers(projectId);
 
-      expect(usersprojectsService.findAllUsersByProject).toHaveBeenCalledWith(1);
+      expect(usersprojectsService.findAllUsersByProject).toHaveBeenCalledWith(
+        1,
+      );
       expect(result).toEqual(expectedResult);
       expect(result).toHaveLength(2);
     });
@@ -378,7 +387,10 @@ describe('ProjectsController', () => {
 
       await controller.removeUserFromProject(projectId, userId);
 
-      expect(usersprojectsService.removeByProjectAndUser).toHaveBeenCalledWith(1, 2);
+      expect(usersprojectsService.removeByProjectAndUser).toHaveBeenCalledWith(
+        1,
+        2,
+      );
     });
   });
 });

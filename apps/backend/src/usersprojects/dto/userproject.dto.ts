@@ -17,5 +17,4 @@ export class UserProjectResponseDto {
   @ApiProperty({ example: UserRole.MEMBER })
   @Expose()
   role: UserRole;
-
 }

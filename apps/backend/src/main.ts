@@ -14,34 +14,31 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,          
-      forbidNonWhitelisted: true, 
-      transform: true,         
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
-  
+
   const config = new DocumentBuilder()
     .setTitle('Project Management API')
     .setDescription(
       'Comprehensive API documentation for the Project Management System. ' +
-      'This API allows users to create and manage projects, assign team members, ' +
-      'track progress, and handle user authentication and authorization.'
+        'This API allows users to create and manage projects, assign team members, ' +
+        'track progress, and handle user authentication and authorization.',
     )
     .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter your JWT token to access protected endpoints.',
-      }
-    )
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      description: 'Enter your JWT token to access protected endpoints.',
+    })
     .build();
-    
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
-
 }
-bootstrap();
+void bootstrap();

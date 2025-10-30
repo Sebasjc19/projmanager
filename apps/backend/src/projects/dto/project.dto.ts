@@ -30,5 +30,4 @@ export class ProjectResponseDto {
   @ApiProperty({ example: projectStatus.PLANNED })
   @Expose()
   status: string;
-
 }

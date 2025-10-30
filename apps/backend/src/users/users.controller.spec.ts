@@ -20,7 +20,6 @@ describe('UsersController', () => {
   let tasksService: jest.Mocked<TasksService>;
   let usersprojectsService: jest.Mocked<UsersprojectsService>;
 
-
   beforeEach(async () => {
     const mockUsersService = {
       create: jest.fn(),
@@ -43,18 +42,21 @@ describe('UsersController', () => {
       providers: [
         { provide: UsersService, useValue: mockUsersService },
         { provide: TasksService, useValue: mockTasksService },
-        { provide: UsersprojectsService, useValue: mockUsersprojectsService }
+        { provide: UsersprojectsService, useValue: mockUsersprojectsService },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-      .overrideGuard(OwnerGuard).useValue({ canActivate: () => true })
-      .overrideGuard(ProductionGuard).useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(OwnerGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProductionGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<UsersController>(UsersController);
     usersService = module.get(UsersService);
     tasksService = module.get(TasksService);
-    usersprojectsService = module.get(UsersprojectsService)
+    usersprojectsService = module.get(UsersprojectsService);
   });
 
   afterEach(() => {
@@ -163,9 +165,9 @@ describe('UsersController', () => {
       expect(usersService.remove).toHaveBeenCalledWith(1);
     });
   });
-  
+
   // ==================== TASK TESTS ====================
-  
+
   describe('findAllTasksByUser', () => {
     it('should return all tasks assigned to a user', async () => {
       const userId = '1';
@@ -223,11 +225,15 @@ describe('UsersController', () => {
         { user: 1, project: 2, role: UserRole.MEMBER },
       ];
 
-      usersprojectsService.findAllProjectsByUser.mockResolvedValue(expectedResult);
+      usersprojectsService.findAllProjectsByUser.mockResolvedValue(
+        expectedResult,
+      );
 
       const result = await controller.getUserProjects(userId);
 
-      expect(usersprojectsService.findAllProjectsByUser).toHaveBeenCalledWith(1);
+      expect(usersprojectsService.findAllProjectsByUser).toHaveBeenCalledWith(
+        1,
+      );
       expect(result).toEqual(expectedResult);
       expect(result).toHaveLength(2);
     });
@@ -239,7 +245,9 @@ describe('UsersController', () => {
 
       const result = await controller.getUserProjects(userId);
 
-      expect(usersprojectsService.findAllProjectsByUser).toHaveBeenCalledWith(1);
+      expect(usersprojectsService.findAllProjectsByUser).toHaveBeenCalledWith(
+        1,
+      );
       expect(result).toEqual([]);
     });
   });

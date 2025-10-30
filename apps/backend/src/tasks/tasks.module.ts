@@ -9,11 +9,11 @@ import { UsersModule } from 'src/users/users.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Task]),
-    forwardRef(()=>ProjectsModule),
-    forwardRef(()=>UsersModule)
+    forwardRef(() => ProjectsModule),
+    forwardRef(() => UsersModule),
   ],
   controllers: [TasksController],
   providers: [TasksService],
-  exports: [TasksService]
+  exports: [TasksService],
 })
 export class TasksModule {}

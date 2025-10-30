@@ -33,7 +33,10 @@ describe('UsersprojectsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersprojectsService,
-        { provide: getRepositoryToken(UserProject), useValue: userProjectRepository },
+        {
+          provide: getRepositoryToken(UserProject),
+          useValue: userProjectRepository,
+        },
         { provide: UsersService, useValue: usersService },
         { provide: ProjectsService, useValue: projectsService },
       ],
@@ -59,13 +62,13 @@ describe('UsersprojectsService', () => {
         id: 1,
         user: { id: 1 },
         project: { id: 2 },
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       };
       const userProjectWithRelations = {
         id: 1,
         user: { id: 1, name: 'User A' },
         project: { id: 2, title: 'Project A' },
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       };
 
       usersService.findOne.mockResolvedValue(user);
@@ -86,12 +89,12 @@ describe('UsersprojectsService', () => {
       expect(userProjectRepository.save).toHaveBeenCalled();
       expect(userProjectRepository.findOne).toHaveBeenCalledWith({
         where: { id: savedUserProject.id },
-        relations: ['user', 'project']
+        relations: ['user', 'project'],
       });
       expect(result).toEqual({
         user: 1,
         project: 2,
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       });
     });
 
@@ -106,7 +109,9 @@ describe('UsersprojectsService', () => {
       userProjectRepository.findOne.mockResolvedValue(null);
 
       await expect(service.create(dto as any)).rejects.toThrow(
-        new NotFoundException('User-Project relation with ID 1 not found after creation')
+        new NotFoundException(
+          'User-Project relation with ID 1 not found after creation',
+        ),
       );
     });
   });
@@ -118,13 +123,13 @@ describe('UsersprojectsService', () => {
           id: 1,
           user: { id: 1, name: 'User A' },
           project: { id: 2, title: 'Project A' },
-          role: UserRole.MEMBER
+          role: UserRole.MEMBER,
         },
         {
           id: 2,
           user: { id: 2, name: 'User B' },
           project: { id: 3, title: 'Project B' },
-          role: UserRole.ADMIN
+          role: UserRole.ADMIN,
         },
       ];
       userProjectRepository.find.mockResolvedValue(userProjects);
@@ -132,13 +137,13 @@ describe('UsersprojectsService', () => {
       const result = await service.findAll();
 
       expect(userProjectRepository.find).toHaveBeenCalledWith({
-        relations: ['user', 'project']
+        relations: ['user', 'project'],
       });
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
         user: 1,
         project: 2,
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       });
     });
 
@@ -164,7 +169,7 @@ describe('UsersprojectsService', () => {
 
       expect(userProjectRepository.find).toHaveBeenCalledWith({
         where: { user: { id: userId } },
-        relations: ['user', 'project']
+        relations: ['user', 'project'],
       });
       expect(result).toHaveLength(2);
     });
@@ -191,7 +196,7 @@ describe('UsersprojectsService', () => {
 
       expect(userProjectRepository.find).toHaveBeenCalledWith({
         where: { project: { id: projectId } },
-        relations: ['user', 'project']
+        relations: ['user', 'project'],
       });
       expect(result).toHaveLength(2);
     });
@@ -213,7 +218,7 @@ describe('UsersprojectsService', () => {
         id: 1,
         user: { id: userId },
         project: { id: projectId },
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       };
       userProjectRepository.findOne.mockResolvedValue(userProject);
 
@@ -221,12 +226,12 @@ describe('UsersprojectsService', () => {
 
       expect(userProjectRepository.findOne).toHaveBeenCalledWith({
         where: { user: { id: userId }, project: { id: projectId } },
-        relations: ['user', 'project']
+        relations: ['user', 'project'],
       });
       expect(result).toEqual({
         user: userId,
         project: projectId,
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       });
     });
 
@@ -234,7 +239,9 @@ describe('UsersprojectsService', () => {
       userProjectRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findByUserAndProject(1, 2)).rejects.toThrow(
-        new NotFoundException('Relation between user 1 and project 2 not found')
+        new NotFoundException(
+          'Relation between user 1 and project 2 not found',
+        ),
       );
     });
   });
@@ -245,7 +252,7 @@ describe('UsersprojectsService', () => {
         id: 1,
         user: { id: 1 },
         project: { id: 2 },
-        role: UserRole.ADMIN
+        role: UserRole.ADMIN,
       };
       userProjectRepository.findOne.mockResolvedValue(userProject);
 
@@ -253,12 +260,12 @@ describe('UsersprojectsService', () => {
 
       expect(userProjectRepository.findOne).toHaveBeenCalledWith({
         where: { id: 1 },
-        relations: ['user', 'project']
+        relations: ['user', 'project'],
       });
       expect(result).toEqual({
         user: 1,
         project: 2,
-        role: UserRole.ADMIN
+        role: UserRole.ADMIN,
       });
     });
 
@@ -266,7 +273,7 @@ describe('UsersprojectsService', () => {
       userProjectRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(999)).rejects.toThrow(
-        new NotFoundException('User-Project relation with ID 999 not found')
+        new NotFoundException('User-Project relation with ID 999 not found'),
       );
     });
   });
@@ -280,9 +287,12 @@ describe('UsersprojectsService', () => {
         id: 1,
         user: { id: userId },
         project: { id: projectId },
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       };
-      const updatedUserProject = { ...existingUserProject, role: UserRole.ADMIN };
+      const updatedUserProject = {
+        ...existingUserProject,
+        role: UserRole.ADMIN,
+      };
 
       userProjectRepository.findOne.mockResolvedValue(existingUserProject);
       userProjectRepository.save.mockResolvedValue(updatedUserProject);
@@ -291,22 +301,24 @@ describe('UsersprojectsService', () => {
 
       expect(userProjectRepository.findOne).toHaveBeenCalledWith({
         where: { project: { id: projectId }, user: { id: userId } },
-        relations: ['user', 'project']
+        relations: ['user', 'project'],
       });
-      expect(userProjectRepository.save).toHaveBeenCalledWith(updatedUserProject);
+      expect(userProjectRepository.save).toHaveBeenCalledWith(
+        updatedUserProject,
+      );
       expect(result).toEqual({
         user: userId,
         project: projectId,
-        role: UserRole.ADMIN
+        role: UserRole.ADMIN,
       });
     });
 
     it('should throw NotFoundException when relation does not exist', async () => {
       userProjectRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.update(1, 2, { role: UserRole.ADMIN } as any)).rejects.toThrow(
-        new NotFoundException('User 2 not found in project 1')
-      );
+      await expect(
+        service.update(1, 2, { role: UserRole.ADMIN } as any),
+      ).rejects.toThrow(new NotFoundException('User 2 not found in project 1'));
     });
   });
 
@@ -319,7 +331,7 @@ describe('UsersprojectsService', () => {
       await service.remove(1);
 
       expect(userProjectRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 }
+        where: { id: 1 },
       });
       expect(userProjectRepository.remove).toHaveBeenCalledWith(userProject);
     });
@@ -328,7 +340,7 @@ describe('UsersprojectsService', () => {
       userProjectRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(999)).rejects.toThrow(
-        new NotFoundException('User-Project relation with ID 999 not found')
+        new NotFoundException('User-Project relation with ID 999 not found'),
       );
     });
   });
@@ -341,7 +353,7 @@ describe('UsersprojectsService', () => {
         id: 1,
         user: { id: userId },
         project: { id: projectId },
-        role: UserRole.MEMBER
+        role: UserRole.MEMBER,
       };
 
       userProjectRepository.findOne.mockResolvedValue(userProject);
@@ -352,8 +364,8 @@ describe('UsersprojectsService', () => {
       expect(userProjectRepository.findOne).toHaveBeenCalledWith({
         where: {
           project: { id: projectId },
-          user: { id: userId }
-        }
+          user: { id: userId },
+        },
       });
       expect(userProjectRepository.remove).toHaveBeenCalledWith(userProject);
     });
@@ -364,18 +376,21 @@ describe('UsersprojectsService', () => {
 
       userProjectRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.removeByProjectAndUser(projectId, userId)).rejects.toThrow(
-        new NotFoundException(`User ${userId} not found in project ${projectId}`)
+      await expect(
+        service.removeByProjectAndUser(projectId, userId),
+      ).rejects.toThrow(
+        new NotFoundException(
+          `User ${userId} not found in project ${projectId}`,
+        ),
       );
 
       expect(userProjectRepository.findOne).toHaveBeenCalledWith({
         where: {
           project: { id: projectId },
-          user: { id: userId }
-        }
+          user: { id: userId },
+        },
       });
       expect(userProjectRepository.remove).not.toHaveBeenCalled();
     });
   });
-
 });

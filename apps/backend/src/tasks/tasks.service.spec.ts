@@ -154,7 +154,7 @@ describe('TasksService', () => {
       tasksRepository.findOne.mockResolvedValue(null);
 
       await expect(service.create(projectId, dto as any)).rejects.toThrow(
-        new NotFoundException('Task with ID 1 not found after creation')
+        new NotFoundException('Task with ID 1 not found after creation'),
       );
     });
   });
@@ -276,10 +276,21 @@ describe('TasksService', () => {
 
       expect(usersService.findOne).toHaveBeenCalledWith(userId);
       expect(tasksRepository.createQueryBuilder).toHaveBeenCalledWith('task');
-      expect(queryBuilder.innerJoin).toHaveBeenCalledWith('task.assignedUsers', 'user');
-      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('task.project', 'project');
-      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith('task.assignedUsers', 'assignedUser');
-      expect(queryBuilder.where).toHaveBeenCalledWith('user.id = :userId', { userId });
+      expect(queryBuilder.innerJoin).toHaveBeenCalledWith(
+        'task.assignedUsers',
+        'user',
+      );
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'task.project',
+        'project',
+      );
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'task.assignedUsers',
+        'assignedUser',
+      );
+      expect(queryBuilder.where).toHaveBeenCalledWith('user.id = :userId', {
+        userId,
+      });
       expect(result).toHaveLength(1);
     });
   });
@@ -323,7 +334,7 @@ describe('TasksService', () => {
       tasksRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(1, 999)).rejects.toThrow(
-        new NotFoundException('Task with ID 999 not found in project 1')
+        new NotFoundException('Task with ID 999 not found in project 1'),
       );
     });
   });
@@ -370,7 +381,7 @@ describe('TasksService', () => {
       tasksRepository.findOne.mockResolvedValue(null);
 
       await expect(service.update(1, 999, {} as any)).rejects.toThrow(
-        new NotFoundException('Task with ID 999 not found in project 1')
+        new NotFoundException('Task with ID 999 not found in project 1'),
       );
     });
   });
@@ -396,7 +407,7 @@ describe('TasksService', () => {
       tasksRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(1, 999)).rejects.toThrow(
-        new NotFoundException('Task with ID 999 not found in project 1')
+        new NotFoundException('Task with ID 999 not found in project 1'),
       );
     });
   });

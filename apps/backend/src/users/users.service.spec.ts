@@ -23,8 +23,9 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         {
-          provide: getRepositoryToken(User), useValue: userRepository
-        }
+          provide: getRepositoryToken(User),
+          useValue: userRepository,
+        },
       ],
     }).compile();
 
@@ -37,7 +38,11 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should create a user and return DTO', async () => {
-      const dto = { name: 'John Doe', email: 'john@example.com', password: 'hashedPass' };
+      const dto = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'hashedPass',
+      };
       const savedUser = { id: 1, ...dto };
 
       userRepository.create.mockReturnValue(dto);
@@ -55,19 +60,27 @@ describe('UsersService', () => {
     });
 
     it('should throw ConflictException if email already exists', async () => {
-      const dto = { name: 'John Doe', email: 'existing@example.com', password: 'pass' };
+      const dto = {
+        name: 'John Doe',
+        email: 'existing@example.com',
+        password: 'pass',
+      };
       const duplicateError = { code: '23505' };
 
       userRepository.create.mockReturnValue(dto);
       userRepository.save.mockRejectedValue(duplicateError);
 
       await expect(service.create(dto as any)).rejects.toThrow(
-        new ConflictException('Email existing@example.com already exist')
+        new ConflictException('Email existing@example.com already exist'),
       );
     });
 
     it('should rethrow other errors', async () => {
-      const dto = { name: 'John Doe', email: 'john@example.com', password: 'pass' };
+      const dto = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'pass',
+      };
       const unexpectedError = new Error('Database connection failed');
 
       userRepository.create.mockReturnValue(dto);
@@ -76,7 +89,6 @@ describe('UsersService', () => {
       await expect(service.create(dto as any)).rejects.toThrow(unexpectedError);
     });
   });
-
 
   describe('findAll', () => {
     it('should return all users as DTOs', async () => {
@@ -125,7 +137,7 @@ describe('UsersService', () => {
       userRepository.findOneBy.mockResolvedValue(null);
 
       await expect(service.findOne(999)).rejects.toThrow(
-        new NotFoundException('User with ID 999 not found')
+        new NotFoundException('User with ID 999 not found'),
       );
     });
   });
@@ -137,7 +149,9 @@ describe('UsersService', () => {
 
       const result = await service.findByEmail('john@example.com');
 
-      expect(userRepository.findOneBy).toHaveBeenCalledWith({ email: 'john@example.com' });
+      expect(userRepository.findOneBy).toHaveBeenCalledWith({
+        email: 'john@example.com',
+      });
       expect(result).toEqual({
         id: 1,
         name: 'John Doe',
@@ -149,7 +163,7 @@ describe('UsersService', () => {
       userRepository.findOneBy.mockResolvedValue(null);
 
       await expect(service.findByEmail('notfound@example.com')).rejects.toThrow(
-        new NotFoundException('User with email notfound@example.com not found')
+        new NotFoundException('User with email notfound@example.com not found'),
       );
     });
   });
@@ -196,7 +210,9 @@ describe('UsersService', () => {
       userRepository.find.mockResolvedValue(users);
 
       await expect(service.findByIds(ids)).rejects.toThrow(
-        new NotFoundException('One or more users not found. Expected 3, found 2')
+        new NotFoundException(
+          'One or more users not found. Expected 3, found 2',
+        ),
       );
     });
   });
@@ -229,7 +245,7 @@ describe('UsersService', () => {
       userRepository.findOne.mockResolvedValue(null);
 
       await expect(service.update(999, {} as any)).rejects.toThrow(
-        new NotFoundException('User with ID 999 not found')
+        new NotFoundException('User with ID 999 not found'),
       );
     });
   });
@@ -250,9 +266,8 @@ describe('UsersService', () => {
       userRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(999)).rejects.toThrow(
-        new NotFoundException('User with ID 999 not found')
+        new NotFoundException('User with ID 999 not found'),
       );
     });
   });
-
 });

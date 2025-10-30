@@ -2,8 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersprojectsController } from './usersprojects.controller';
 import { UsersprojectsService } from './usersprojects.service';
 import { UserProjectResponseDto } from './dto/userproject.dto';
-import { CreateUsersprojectDto } from './dto/create-usersproject.dto';
-import { UpdateUsersprojectDto } from './dto/update-usersproject.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProjectAdminGuard } from '../projects/guards/project-admin.guard';
 import { ProjectMemberGuard } from '../projects/guards/project-member.guard';
@@ -28,10 +26,14 @@ describe('UsersprojectsController', () => {
         { provide: UsersprojectsService, useValue: mockUsersprojectsService },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: () => true })
-      .overrideGuard(ProjectAdminGuard).useValue({ canActivate: () => true })
-      .overrideGuard(ProjectMemberGuard).useValue({ canActivate: () => true })
-      .overrideGuard(ProductionGuard).useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProjectAdminGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProjectMemberGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(ProductionGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<UsersprojectsController>(UsersprojectsController);
@@ -45,7 +47,6 @@ describe('UsersprojectsController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
-
 
   describe('findAll', () => {
     it('should return all user-project relationships', async () => {
@@ -101,11 +102,16 @@ describe('UsersprojectsController', () => {
         role: UserRole.MEMBER,
       };
 
-      usersprojectsService.findByUserAndProject.mockResolvedValue(expectedResult);
+      usersprojectsService.findByUserAndProject.mockResolvedValue(
+        expectedResult,
+      );
 
       const result = await controller.findByUserAndProject(userId, projectId);
 
-      expect(usersprojectsService.findByUserAndProject).toHaveBeenCalledWith(1, 2);
+      expect(usersprojectsService.findByUserAndProject).toHaveBeenCalledWith(
+        1,
+        2,
+      );
       expect(result).toEqual(expectedResult);
     });
   });

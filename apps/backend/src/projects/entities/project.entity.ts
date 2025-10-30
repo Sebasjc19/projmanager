@@ -29,18 +29,18 @@ export class Project {
   endDate: Date;
 
   /** Current project status. */
-  @Column({ 
+  @Column({
     type: 'enum',
     enum: projectStatus,
-    default: projectStatus.PLANNED
+    default: projectStatus.PLANNED,
   })
   status: projectStatus;
 
   /** Users assigned to this project. */
-  @OneToMany(() => UserProject, userProject => userProject.project)
+  @OneToMany(() => UserProject, (userProject) => userProject.project)
   userProjects: UserProject[];
 
   /** Tasks belonging to this project. */
-  @OneToMany(() => Task, task => task.project)
+  @OneToMany(() => Task, (task) => task.project)
   tasks: Task[];
 }

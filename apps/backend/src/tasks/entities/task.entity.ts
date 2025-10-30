@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Project } from '../../projects/entities/project.entity';
 import { User } from '../../users/entities/user.entity';
 import { TaskState } from '../enums/task-state.enum';
@@ -36,11 +43,11 @@ export class Task {
   endDate: Date;
 
   /** The project to which this task belongs. */
-  @ManyToOne(() => Project, project => project.tasks, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Project, (project) => project.tasks, { onDelete: 'CASCADE' })
   project: Project;
 
   /** Users assigned to work on this task. */
-  @ManyToMany(() => User, user => user.tasks)
+  @ManyToMany(() => User, (user) => user.tasks)
   @JoinTable()
   assignedUsers: User[];
 }

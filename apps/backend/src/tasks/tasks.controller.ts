@@ -15,12 +15,15 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Retrieve all tasks', description: 'Available only in non-production environments for testing or seeding.'})
+  @ApiOperation({
+    summary: 'Retrieve all tasks',
+    description:
+      'Available only in non-production environments for testing or seeding.',
+  })
   @ApiStandardResponse(TaskResponseDto, 'Tasks retrieved successfully')
   @ApiCommonErrors({ unauthorized: true })
   @UseGuards(ProductionGuard)
   findAll() {
     return this.tasksService.findAll();
   }
-
 }

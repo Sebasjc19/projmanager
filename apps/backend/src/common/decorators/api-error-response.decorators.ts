@@ -5,7 +5,6 @@ import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiConflictResponse,
-  ApiInternalServerErrorResponse,
   ApiExtraModels,
 } from '@nestjs/swagger';
 import { ErrorResponseDto } from '../dto/error-response.dto';
@@ -28,14 +27,14 @@ interface ApiErrorOptions {
 /**
  * Decorator that adds common error responses to Swagger documentation.
  * Only includes the error types specified in the options.
- * 
+ *
  * @param options - Configuration object specifying which errors to document
  * @returns Combined decorator with selected error responses
- * 
+ *
  * @example
  * // Document only validation and authentication errors
  * @ApiCommonErrors({ badRequest: true, unauthorized: true })
- * 
+ *
  * @example
  * // Document resource not found error
  * @ApiCommonErrors({ notFound: true, unauthorized: true })
@@ -56,7 +55,7 @@ export const ApiCommonErrors = (options: ApiErrorOptions = {}) => {
       ApiBadRequestResponse({
         description: 'Bad request - Invalid input data',
         type: ErrorResponseDto,
-      })
+      }),
     );
   }
 
@@ -65,7 +64,7 @@ export const ApiCommonErrors = (options: ApiErrorOptions = {}) => {
       ApiUnauthorizedResponse({
         description: 'Unauthorized - Invalid or missing authentication',
         type: ErrorResponseDto,
-      })
+      }),
     );
   }
 
@@ -74,7 +73,7 @@ export const ApiCommonErrors = (options: ApiErrorOptions = {}) => {
       ApiForbiddenResponse({
         description: 'Forbidden - Insufficient permissions',
         type: ErrorResponseDto,
-      })
+      }),
     );
   }
 
@@ -83,7 +82,7 @@ export const ApiCommonErrors = (options: ApiErrorOptions = {}) => {
       ApiNotFoundResponse({
         description: 'Not found - Resource not found',
         type: ErrorResponseDto,
-      })
+      }),
     );
   }
 
@@ -92,7 +91,7 @@ export const ApiCommonErrors = (options: ApiErrorOptions = {}) => {
       ApiConflictResponse({
         description: 'Conflict - Resource already exists',
         type: ErrorResponseDto,
-      })
+      }),
     );
   }
 

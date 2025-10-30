@@ -13,7 +13,7 @@ import { AuthController } from './auth.controller';
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: config.get<string>('JWT_EXPIRATION') },
       }),

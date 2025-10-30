@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 /**
  * Generic standardized API response wrapper.
  * Ensures consistent response structure across all endpoints.
- * 
+ *
  * @template T - The type of data being returned
  */
 export class ApiResponseDto<T> {
@@ -13,7 +13,7 @@ export class ApiResponseDto<T> {
     example: 200,
   })
   status: number;
-  
+
   /** Human-readable response message */
   @ApiProperty({
     description: 'Response message',

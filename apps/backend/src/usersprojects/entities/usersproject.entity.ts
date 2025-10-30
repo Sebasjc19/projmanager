@@ -13,11 +13,13 @@ export class UserProject {
   id: number;
 
   /** User assigned to the project */
-  @ManyToOne(() => User, user => user.userProjects, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.userProjects, { onDelete: 'CASCADE' })
   user: User;
-  
+
   /** Project assigned to the user */
-  @ManyToOne(() => Project, project => project.userProjects, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Project, (project) => project.userProjects, {
+    onDelete: 'CASCADE',
+  })
   project: Project;
 
   /** Role of the user in the project */

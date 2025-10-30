@@ -16,11 +16,10 @@ describe('TasksController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TasksController],
-      providers: [
-        { provide: TasksService, useValue: mockTasksService },
-      ],
+      providers: [{ provide: TasksService, useValue: mockTasksService }],
     })
-      .overrideGuard(ProductionGuard).useValue({ canActivate: () => true })
+      .overrideGuard(ProductionGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     controller = module.get<TasksController>(TasksController);

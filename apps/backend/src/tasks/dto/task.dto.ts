@@ -31,11 +31,11 @@ export class TaskResponseDto {
   @Expose()
   endDate: string;
 
-  @ApiProperty({ example: 1})
+  @ApiProperty({ example: 1 })
   @Expose()
   projectId: number;
 
-  @ApiProperty({ example: [1,2,3,4] })
+  @ApiProperty({ example: [1, 2, 3, 4] })
   @Expose()
   assignedUsers: number[];
 }

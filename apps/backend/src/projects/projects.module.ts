@@ -10,8 +10,8 @@ import { TasksModule } from 'src/tasks/tasks.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Project, Task]),
-    forwardRef(()=> UsersprojectsModule),
-    forwardRef(()=>TasksModule)
+    forwardRef(() => UsersprojectsModule),
+    forwardRef(() => TasksModule),
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

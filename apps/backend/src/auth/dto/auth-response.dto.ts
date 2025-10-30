@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
 /**
  * Response DTO for authentication endpoints.
  * Returns the JWT access token after successful login.
@@ -15,4 +15,11 @@ export class AuthResponseDto {
   })
   @Expose()
   access_token: string;
+
+  @ApiProperty({ description: 'User information' })
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }

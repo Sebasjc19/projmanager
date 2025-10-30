@@ -7,12 +7,10 @@ import { UserRole } from '../usersprojects/enums/user-role.enum';
 import { projectStatus } from './enums/project-status.enum';
 import { NotFoundException } from '@nestjs/common';
 
-
 describe('ProjectsService', () => {
   let service: ProjectsService;
-  let projectRepository: any;
 
-  projectRepository = {
+  const projectRepository = {
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
@@ -29,8 +27,8 @@ describe('ProjectsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProjectsService,
-        { provide: getRepositoryToken(Project), useValue: projectRepository, },
-        { provide: UsersprojectsService, useValue: userProjectsService, },
+        { provide: getRepositoryToken(Project), useValue: projectRepository },
+        { provide: UsersprojectsService, useValue: userProjectsService },
       ],
     }).compile();
 
@@ -43,9 +41,20 @@ describe('ProjectsService', () => {
 
   describe('create', () => {
     it('should create a project', async () => {
-      const dto = { title: 'Test Project', description: 'A test project', startDate: '2025-01-01', endDate: '2025-12-31' };
+      const dto = {
+        title: 'Test Project',
+        description: 'A test project',
+        startDate: '2025-01-01',
+        endDate: '2025-12-31',
+      };
       const ownerId = 1;
-      const savedProject = { id: 1, ...dto, startDate: new Date('2025-01-01'), endDate: new Date('2025-12-31'), status: projectStatus.PLANNED };
+      const savedProject = {
+        id: 1,
+        ...dto,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31'),
+        status: projectStatus.PLANNED,
+      };
 
       projectRepository.create.mockReturnValue(dto);
       projectRepository.save.mockResolvedValue(savedProject);
@@ -116,7 +125,7 @@ describe('ProjectsService', () => {
 
       expect(result).toEqual([]);
     });
-  })
+  });
 
   describe('findOne', () => {
     it('should return a project by ID as DTO', async () => {
@@ -149,10 +158,10 @@ describe('ProjectsService', () => {
       projectRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(999)).rejects.toThrow(
-        new NotFoundException('Project with ID 999 not found')
+        new NotFoundException('Project with ID 999 not found'),
       );
     });
-  })
+  });
 
   describe('update', () => {
     it('should update a project and return DTO', async () => {
@@ -169,7 +178,6 @@ describe('ProjectsService', () => {
 
       projectRepository.findOne.mockResolvedValue(existingProject);
       projectRepository.save.mockResolvedValue(updatedProject);
-     
 
       const result = await service.update(1, updateDto as any);
 
@@ -193,10 +201,10 @@ describe('ProjectsService', () => {
       projectRepository.findOne.mockResolvedValue(null);
 
       await expect(service.update(999, {} as any)).rejects.toThrow(
-        new NotFoundException('Project with ID 999 not found')
+        new NotFoundException('Project with ID 999 not found'),
       );
     });
-  })
+  });
 
   describe('remove', () => {
     it('should remove a project', async () => {
@@ -207,7 +215,7 @@ describe('ProjectsService', () => {
       await service.remove(1);
 
       expect(projectRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 }
+        where: { id: 1 },
       });
       expect(projectRepository.remove).toHaveBeenCalledWith(project);
     });
@@ -216,9 +224,8 @@ describe('ProjectsService', () => {
       projectRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(999)).rejects.toThrow(
-        new NotFoundException('Project with ID 999 not found')
+        new NotFoundException('Project with ID 999 not found'),
       );
     });
-  })
-
+  });
 });

@@ -6,10 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TasksModule } from 'src/tasks/tasks.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]), 
-    forwardRef(()=>TasksModule)
-  ],
+  imports: [TypeOrmModule.forFeature([User]), forwardRef(() => TasksModule)],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [TypeOrmModule, UsersService],
