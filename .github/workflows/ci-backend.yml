@@ -2,19 +2,16 @@ name: CI Backend
 
 on:
   push:
-    branches: [main, develop, 'feature/*']
-    paths:
-      - 'apps/backend/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'turbo.json'
+    branches: [main, 'feature/*']
   pull_request:
-    branches: [main, develop]
-    paths:
-      - 'apps/backend/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'turbo.json'
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '20.x'
@@ -23,131 +20,60 @@ jobs:
   lint:
     name: Lint Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-lint-backend-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-lint-backend-
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run lint
-        run: npx turbo run lint --filter=backend
+      - run: npm ci --prefer-offline
+      - run: npm run lint --workspace=backend
 
   type-check:
     name: Type Check Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-typecheck-backend-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-typecheck-backend-
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npx turbo run type-check --filter=backend
+      - run: npm ci --prefer-offline
+      - run: npm run type-check --workspace=backend
 
   test:
     name: Test Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Cache Turbo
-        uses: actions/cache@v4
+      - run: npm ci --prefer-offline
+      - run: npm run test:cov --workspace=backend
+      - uses: codecov/codecov-action@v4
+        continue-on-error: true
         with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-test-backend-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-test-backend-
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests with coverage
-        run: npx turbo run test:cov --filter=backend
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./apps/backend/coverage/lcov.info
-          flags: backend
-          name: backend-coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          files: ./apps/backend/coverage/lcov.info
 
   build:
     name: Build Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [lint, type-check, test]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-build-backend-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-build-backend-
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build backend
-        run: npx turbo run build --filter=backend
-
-      - name: Archive backend artifacts
-        uses: actions/upload-artifact@v4
+      - run: npm ci --prefer-offline
+      - run: npm run build --workspace=backend
+      - uses: actions/upload-artifact@v4
         with:
           name: backend-build
           path: apps/backend/dist
