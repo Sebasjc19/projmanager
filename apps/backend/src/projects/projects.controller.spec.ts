@@ -208,7 +208,7 @@ describe('ProjectsController', () => {
         id: 1,
         title: dto.title,
         description: dto.description,
-        state: dto.state,
+        state: TaskState.TODO,
         startDate: '2025-01-01',
         endDate: '2025-01-31',
         projectId: 1,

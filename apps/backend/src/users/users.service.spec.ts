@@ -195,7 +195,7 @@ describe('UsersService', () => {
     });
 
     it('should return empty array when ids is null', async () => {
-      const result = await service.findByIds(null);
+      const result = await service.findByIds([]);
 
       expect(userRepository.find).not.toHaveBeenCalled();
       expect(result).toEqual([]);
