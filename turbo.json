@@ -1,26 +1,50 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalDependencies": ["**/.env.*local"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "cache": true,
+      "outputs": []
     },
-    "check-types": {
-      "dependsOn": ["^check-types"]
+    "type-check": {
+      "dependsOn": ["^type-check"],
+      "cache": true,
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "cache": true,
+      "outputs": ["coverage/**"],
+      "inputs": ["$TURBO_DEFAULT$", "src/**", "test/**", "!**/node_modules/**"]
+    },
+    "test:cov": {
+      "dependsOn": ["^test:cov"],
+      "cache": true,
+      "outputs": ["coverage/**"],
+      "inputs": ["$TURBO_DEFAULT$", "src/**", "test/**"]
+    },
+    "test:e2e": {
+      "cache": false,
+      "outputs": []
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "test": {
-      "dependsOn": ["^test"],
-      "inputs": ["$TURBO_DEFAULT$", "test/**", "!**/node_modules/**"]
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
     }
-    
   }
 }

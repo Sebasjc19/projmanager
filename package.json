@@ -3,13 +3,17 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "build:backend": "turbo run build --filter=backend",
     "dev": "turbo run dev",
+    "start": "turbo run start",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "dev:backend": "turbo run dev --filter backend",
     "dev:frontend": "turbo run dev --filter frontend",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "test:backend": "turbo run test:cov --filter=backend",
+    "test:cov": "turbo run test:cov"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
