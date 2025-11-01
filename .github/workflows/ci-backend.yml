@@ -1,0 +1,83 @@
+name: CI Backend
+
+on:
+  push:
+    branches: [main, 'feature/*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  lint:
+    name: Lint Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run lint --workspace=backend
+
+  type-check:
+    name: Type Check Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run type-check --workspace=backend
+
+  test:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run test:cov --workspace=backend
+      - uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./apps/backend/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+  build:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint, type-check, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci --prefer-offline
+      - run: npm run build --workspace=backend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: apps/backend/dist
+          retention-days: 7
