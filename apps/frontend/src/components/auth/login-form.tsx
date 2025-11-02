@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
-import { login } from "@/lib/auth"
+import { login } from "@/services/auth.service"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
@@ -32,7 +32,7 @@ export function LoginForm() {
         title: "Success",
         description: "Logged in successfully",
       })
-      //router.push("/dashboard")
+      router.push("/dashboard")
     } catch (error) {
       toast({
         title: "Error",

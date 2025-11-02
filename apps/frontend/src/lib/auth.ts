@@ -1,78 +1,56 @@
-export interface User {
-  id: string
-  email: string
-  name: string
-}
-
-export interface AuthResponse {
-  access_token: string
-  user: User
-}
-
-const API_URL = "http://localhost:3001/api"
+import { User } from "@/types/user.types"
 
 export function getToken(): string | null {
-  if (typeof window === "undefined") return null
-  return localStorage.getItem("token")
+    if (typeof window === "undefined") return null
+
+    try{
+        const token = localStorage.getItem("token")
+        if (!token || token === "undefined") {
+            return null
+        }
+        return JSON.parse(token)
+    } catch (error) {
+        console.error("Error parsing token from localStorage:", error)
+        localStorage.removeItem("token")
+        return null
+    }
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem("token", token)
+    localStorage.setItem("token", token)
 }
 
 export function removeToken(): void {
-  localStorage.removeItem("token")
+    localStorage.removeItem("token")
 }
 
 export function getUser(): User | null {
-  if (typeof window === "undefined") return null
-  const userStr = localStorage.getItem("user")
-  return userStr ? JSON.parse(userStr) : null
+    if (typeof window === "undefined") return null
+
+    try {
+        const user = localStorage.getItem("user")
+
+        if (!user || user === "undefined") {
+            return null
+        }
+
+        return JSON.parse(user)
+    } catch (error) {
+        console.error("Error parsing user from localStorage:", error)
+        localStorage.removeItem("user")
+        return null
+    }
 }
 
 export function setUser(user: User): void {
-  localStorage.setItem("user", JSON.stringify(user))
+    localStorage.setItem("user", JSON.stringify(user))
 }
 
 export function removeUser(): void {
-  localStorage.removeItem("user")
-}
-
-export async function login(email: string, password: string): Promise<AuthResponse> {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message || "Login failed")
-  }
-
-  return response.json()
-}
-
-export async function register(email: string, password: string, name: string): Promise<AuthResponse> {
-  const response = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password, name }),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message || "Registration failed")
-  }
-
-  return response.json()
+    localStorage.removeItem("user")
 }
 
 export function logout(): void {
-  removeToken()
-  removeUser()
+    removeToken()
+    removeUser()
 }
