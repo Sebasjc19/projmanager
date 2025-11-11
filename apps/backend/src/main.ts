@@ -42,10 +42,10 @@ async function bootstrap() {
   const port = process.env.PORT ?? 8080;
 
     app.enableCors({
-      origin: 'http://localhost:3000',
+      origin: process.env.FRONTEND_IP || 'http://localhost:3000',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
     });
   await app.listen(port);
 }
