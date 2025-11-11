@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -44,6 +45,7 @@ export class ProjectsController {
   ) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new project' })
   @ApiStandardResponse(
@@ -218,7 +220,7 @@ export class ProjectsController {
     @Param('projectId') projectId: string,
     @Body() createUsersprojectDto: CreateUsersprojectDto,
   ) {
-    return this.usersProjectsService.create(createUsersprojectDto);
+    return this.usersProjectsService.create(+projectId, createUsersprojectDto);
   }
 
   @ApiBearerAuth()

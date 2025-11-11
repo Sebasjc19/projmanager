@@ -12,6 +12,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UsersprojectsService } from '../usersprojects/usersprojects.service';
 import { UserRole } from '../usersprojects/enums/user-role.enum';
 import { ProjectResponseDto } from './dto/project.dto';
+import { UsersService } from 'src/users/users.service';
+import { projectStatus } from './enums/project-status.enum';
 
 /**
  * Service responsible for managing projects.
@@ -25,6 +27,8 @@ export class ProjectsService {
 
     @Inject(forwardRef(() => UsersprojectsService))
     private readonly usersProjectsService: UsersprojectsService,
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -39,9 +43,10 @@ export class ProjectsService {
   ): Promise<ProjectResponseDto> {
     const project = this.projectRepository.create(createProjectDto);
     const savedProject = await this.projectRepository.save(project);
-    await this.usersProjectsService.create({
-      userId: ownerId,
-      projectId: savedProject.id,
+    const user = await this.usersService.findOne(ownerId);
+    await this.usersProjectsService.create(
+      savedProject.id,{
+      email: user.email,
       role: UserRole.OWNER,
     });
     return this.toResponseDto(savedProject);
@@ -104,9 +109,10 @@ export class ProjectsService {
     if (!project) {
       throw new NotFoundException(`Project with ID ${id} not found`);
     }
-    await this.projectRepository.remove(project);
+    project.status = projectStatus.CANCELLED
+    await this.projectRepository.save(project);
   }
-
+  
   /**
    * Maps a Project entity to a ProjectResponseDto.
    */
@@ -115,8 +121,8 @@ export class ProjectsService {
       id: project.id,
       title: project.title,
       description: project.description,
-      startDate: project.startDate?.toISOString().split('T')[0],
-      endDate: project.endDate?.toISOString().split('T')[0],
+      startDate: new Date(project.startDate).toISOString(),
+      endDate: new Date(project.endDate).toISOString(),
       status: project.status,
     };
   }
