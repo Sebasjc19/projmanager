@@ -2,20 +2,20 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { getToken, getUser, setToken, setUser, removeToken, removeUser } from "../lib/auth"
-import { User } from "@/types/user.types"
+import { UserDto } from "@/types/user.types"
 
 interface AuthContextType {
-  user: User | null
+  user: UserDto | null
   token: string | null
   isLoading: boolean
-  login: (token: string, user: User) => void
+  login: (token: string, user: UserDto) => void
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUserState] = useState<User | null>(null)
+  const [user, setUserState] = useState<UserDto | null>(null)
   const [token, setTokenState] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: UserDto) => {
     setToken(newToken)
     setUser(newUser)
     setTokenState(newToken)
