@@ -4,8 +4,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { StrategyOptions } from 'passport-jwt';
 interface JwtPayload {
-  useremail: string;
-  userid: string;
+  email: string;
+  sub: string;
   iat?: number;
   exp?: number;
 }
@@ -35,12 +35,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @throws {UnauthorizedException} If payload is missing required fields
    */
   validate(payload: JwtPayload): { useremail: string; userid: string } {
-    if (!payload.useremail || !payload.userid) {
+    if (!payload.email || !payload.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
     return {
-      useremail: payload.useremail,
-      userid: payload.userid,
+      useremail: payload.email,
+      userid: payload.sub,
     };
   }
 }
