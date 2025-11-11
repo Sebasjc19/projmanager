@@ -1,4 +1,4 @@
-import { User } from "@/types/user.types"
+import { UserDto } from "@/types/user.types"
 
 export function getToken(): string | null {
     if (typeof window === "undefined") return null
@@ -8,7 +8,7 @@ export function getToken(): string | null {
         if (!token || token === "undefined") {
             return null
         }
-        return JSON.parse(token)
+        return token
     } catch (error) {
         console.error("Error parsing token from localStorage:", error)
         localStorage.removeItem("token")
@@ -24,7 +24,7 @@ export function removeToken(): void {
     localStorage.removeItem("token")
 }
 
-export function getUser(): User | null {
+export function getUser(): UserDto | null {
     if (typeof window === "undefined") return null
 
     try {
@@ -42,7 +42,7 @@ export function getUser(): User | null {
     }
 }
 
-export function setUser(user: User): void {
+export function setUser(user: UserDto): void {
     localStorage.setItem("user", JSON.stringify(user))
 }
 
