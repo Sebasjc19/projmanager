@@ -11,7 +11,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectsService } from '../projects/projects.service';
 import { UsersService } from '../users/users.service';
-import { UserProjectResponseDto } from './dto/userproject.dto';
+import { ProjectUserWithDetailsResponseDto, UserProjectResponseDto, UserProjectWithDetailsResponseDto } from './dto/userproject.dto';
 import { Project } from 'src/projects/entities/project.entity';
 import { User } from 'src/users/entities/user.entity';
 /**
@@ -35,11 +35,15 @@ export class UsersprojectsService {
    * @param createUsersprojectDto Relationship data including userId, projectId, and role
    */
   async create(
+    projectId: number,
     createUsersprojectDto: CreateUsersprojectDto,
   ): Promise<UserProjectResponseDto> {
+    const user = await this.usersService.findByEmail(createUsersprojectDto.email);
+    const project = await this.projectsService.findOne(projectId);
+
     const userProject = this.userProjectRepository.create({
-      user: { id: createUsersprojectDto.userId } as User,
-      project: { id: createUsersprojectDto.projectId } as Project,
+      user: { id: user.id } as User,
+      project: { id: projectId } as Project,
       role: createUsersprojectDto.role,
     });
 
@@ -73,7 +77,7 @@ export class UsersprojectsService {
    */
   async findAllProjectsByUser(
     userId: number,
-  ): Promise<UserProjectResponseDto[]> {
+  ): Promise<UserProjectWithDetailsResponseDto[]> {
     const usersProjects = await this.userProjectRepository.find({
       where: { user: { id: userId } },
       relations: ['user', 'project'],
@@ -81,7 +85,9 @@ export class UsersprojectsService {
     if (!usersProjects.length) {
       return [];
     }
-    return usersProjects.map((userProject) => this.toResponseDto(userProject));
+    return usersProjects.map((userProject) => 
+      this.toResponseDtoWithProjectDetails(userProject)
+    );
   }
 
   /**
@@ -91,7 +97,7 @@ export class UsersprojectsService {
    */
   async findAllUsersByProject(
     projectId: number,
-  ): Promise<UserProjectResponseDto[]> {
+  ): Promise<ProjectUserWithDetailsResponseDto[]> {
     const usersProjects = await this.userProjectRepository.find({
       where: { project: { id: projectId } },
       relations: ['user', 'project'],
@@ -99,7 +105,8 @@ export class UsersprojectsService {
     if (!usersProjects.length) {
       return [];
     }
-    return usersProjects.map((userProject) => this.toResponseDto(userProject));
+    return usersProjects.map((userProject) => 
+      this.toResponseDtoWithUserDetails(userProject));
   }
 
   /**
@@ -229,6 +236,53 @@ export class UsersprojectsService {
     return {
       user: userProject.user.id,
       project: userProject.project.id,
+      role: userProject.role,
+    };
+  }
+
+  /**
+   * Maps a user-project entity with user details
+   */
+  private toResponseDtoWithUserDetails(
+    userProject: UserProject,
+  ): ProjectUserWithDetailsResponseDto {
+    if (!userProject.user || !userProject.project) {
+      throw new Error(
+        'UserProject must have user and project relations loaded',
+      );
+    }
+    return {
+      project: userProject.project.id,
+      user: {
+        id: userProject.user.id,
+        name: userProject.user.name,
+        email: userProject.user.email,
+      },
+      role: userProject.role,
+    };
+  }
+
+  /**
+   * Maps a user-project entity with project details
+   */
+  private toResponseDtoWithProjectDetails(
+    userProject: UserProject,
+  ): UserProjectWithDetailsResponseDto {
+    if (!userProject.user || !userProject.project) {
+      throw new Error(
+        'UserProject must have user and project relations loaded',
+      );
+    }
+    return {
+      user: userProject.user.id,
+      project: {
+        id: userProject.project.id,
+        title: userProject.project.title,
+        description: userProject.project.description,
+        startDate: new Date(userProject.project.startDate).toISOString(),
+        endDate: new Date(userProject.project.endDate).toISOString(),
+        status: userProject.project.status,
+      },
       role: userProject.role,
     };
   }

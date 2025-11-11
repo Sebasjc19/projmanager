@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
 import { UserRole } from '../enums/user-role.enum';
 import { ApiProperty } from '@nestjs/swagger';
 /**
@@ -7,21 +7,12 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateUsersprojectDto {
   /** User id */
   @ApiProperty({
-    example: '1',
-    description: 'The id of the user.',
+    example: 'sebas@example.com',
+    description: 'The email of the user.',
   })
-  @IsNumber()
+  @IsEmail()
   @IsNotEmpty()
-  userId: number;
-
-  /** Project id */
-  @ApiProperty({
-    example: '1',
-    description: 'The id of the project.',
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  projectId: number;
+  email: string;
 
   /** Role of the user within the project */
   @ApiProperty({
