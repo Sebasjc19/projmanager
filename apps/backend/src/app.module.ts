@@ -8,6 +8,7 @@ import { UsersprojectsModule } from './usersprojects/usersprojects.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
 import { AuthModule } from './auth/auth.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AuthModule } from './auth/auth.module';
             : false,
       }),
     }),
+    ScheduleModule.forRoot(),
     UsersModule,
     UsersprojectsModule,
     ProjectsModule,

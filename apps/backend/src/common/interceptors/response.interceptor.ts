@@ -5,20 +5,15 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap, catchError } from 'rxjs/operators';
 import { Response } from 'express';
+import { throwError } from 'rxjs';
 
 interface StandardResponse<T = unknown> {
   status: number;
   message: string;
   data?: T;
   timestamp: string;
-}
-
-interface ResponseData {
-  status?: number;
-  message?: string;
-  data?: unknown;
 }
 
 @Injectable()
@@ -29,23 +24,50 @@ export class ResponseInterceptor<T = unknown>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<StandardResponse<T>> {
+    const ctx = context.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest();
     return next.handle().pipe(
+      tap((data) => {
+        console.log('[Interceptor] Data recibida:', data);
+      }),
       map((data: unknown) => {
-        const ctx = context.switchToHttp();
-        const response = ctx.getResponse<Response>();
-
-        if (data && typeof data === 'object' && 'status' in data) {
+        const statusCode = response.statusCode;
+        if (
+          data &&
+          typeof data === 'object' &&
+          'status' in data &&
+          'timestamp' in data
+        ) {
+          console.log('[Interceptor] Ya es StandardResponse');
           return data as StandardResponse<T>;
         }
-        const responseData = data as ResponseData;
-
-        return {
-          status: response.statusCode,
-          message: responseData?.message ?? 'Success',
-          data: responseData?.data !== undefined ? responseData.data : data,
+        const wrapped: StandardResponse<T> = {
+          status: statusCode,
+          message: this.getStatusMessage(statusCode),
+          data: data as T,
           timestamp: new Date().toISOString(),
-        } as StandardResponse<T>;
+        };
+        return wrapped;
+      }),
+      catchError((error) => {
+        return throwError(() => error);
       }),
     );
+  }
+
+  private getStatusMessage(statusCode: number): string {
+    const messages: Record<number, string> = {
+      200: 'Success',
+      201: 'Created',
+      204: 'No Content',
+      400: 'Bad Request',
+      401: 'Unauthorized',
+      403: 'Forbidden',
+      404: 'Not Found',
+      500: 'Internal Server Error',
+    };
+
+    return messages[statusCode] || 'Success';
   }
 }
