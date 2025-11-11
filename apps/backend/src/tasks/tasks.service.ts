@@ -8,6 +8,8 @@ import { ProjectsService } from '../projects/projects.service';
 import { UsersService } from '../users/users.service';
 import { Project } from 'src/projects/entities/project.entity';
 import { TaskResponseDto } from './dto/task.dto';
+import { plainToInstance } from 'class-transformer';
+import { UserResponseDto } from 'src/users/dto/user.dto';
 
 /**
  * Service for managing tasks.
@@ -179,10 +181,10 @@ export class TasksService {
       title: task.title,
       description: task.description,
       state: task.state,
-      startDate: task.startDate.toISOString().split('T')[0],
-      endDate: task.endDate.toISOString().split('T')[0],
+      startDate: new Date(task.startDate).toISOString(),
+      endDate: new Date(task.endDate).toISOString(),
       projectId: task.project.id,
-      assignedUsers: task.assignedUsers?.map((user) => user.id) || [],
+      assignedUsers: task.assignedUsers ? plainToInstance(UserResponseDto, task.assignedUsers): []
     };
   }
 }

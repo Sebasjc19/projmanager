@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { TaskState } from '../enums/task-state.enum';
+import { UserResponseDto } from 'src/users/dto/user.dto';
 
 /**
  * Basic task response without related entities.
@@ -37,5 +38,5 @@ export class TaskResponseDto {
 
   @ApiProperty({ example: [1, 2, 3, 4] })
   @Expose()
-  assignedUsers: number[];
+  assignedUsers: UserResponseDto[];
 }
