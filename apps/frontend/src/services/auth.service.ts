@@ -1,22 +1,7 @@
 import { AuthResponse } from "@/types/auth.types"
-import { apiCall } from "./api"
-import { BackendResponse } from "@/types/api.types"
+import { api } from "@/lib/api"
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
-    const response = await apiCall<BackendResponse>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-    })
-    return {
-        access_token: response.data.access_token,
-        user: response.data.user,
-    }
-}
-
-export async function register(email: string, password: string, name: string): Promise<AuthResponse> {
-    const response = await apiCall<BackendResponse>(`/auth/register`, {
-        method: "POST",
-        body: JSON.stringify({ email, password, name }),
-    })
+    const response = await api.post<AuthResponse>('/auth/login', { email, password })
     return response.data
 }
